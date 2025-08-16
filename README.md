@@ -1,54 +1,167 @@
-# React + TypeScript + Vite
+# 🎶 Ethereal Harmony
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A high-performance, immersive web audio player with a real-time, audio-reactive Three.js visualizer and a sleek glassmorphism UI. Built for speed, accessibility, and trust — all data stays local by default.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Features
 
-## Expanding the ESLint configuration
+- **Modern Stack**: React 18 + TypeScript + Vite
+- **Visualizer**: Three.js (WebGLRenderer) with adaptive quality presets
+- **State Management**: Zustand with domain-driven stores (`usePlayerStore`, `useVizStore`)
+- **Animations**: Framer Motion for smooth material-style interactions
+- **Glassmorphism UI**:
+  - Border radius: 16px  
+  - Backdrop blur: 16px  
+  - Background: `rgba(255, 255, 255, 0.12)`  
+  - Border: `1px solid rgba(255, 255, 255, 0.25)`
+- **Typography**:
+  - Titles: Montserrat (700)
+  - Body: Lato (400)
+- **Accessibility**: WCAG AA contrast, full keyboard navigation, ARIA roles for custom controls
+- **Privacy**: All data stored locally (playlists, settings, EQ)
+- **Media Support**:
+  - Local file playback
+  - Streaming (HLS with native + `hls.js` fallback)
+  - Hardware media key integration (via MediaSession API)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 📂 Project Structure
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+src/
+components/
+player/ # PlayerCard, MediaKeyBridge
+settings/ # SettingsPanel, EqPanel, VisualizerControls, AudioDevicePicker
+visualizer/ # SceneCanvas (primary canvas wrapper)
+lib/
+audio/ # AudioEngine, HlsController, EQGraph
+state/ # usePlayerStore, useVizStore
+utils/ # IconRegistry, useHotkeys
+visualizer/ # SceneController, QualityPresets
+shaders/ # Particle + postprocessing shaders
+styles/
+tokens.css # Design tokens (glass, palette)
+globals.css # Global resets + imports tokens.css first
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-### HLS Playback
-- **Safari / iOS:** HLS streams play natively.
-- **Chromium / Firefox:** Fallback path uses [`hls.js`](https://github.com/video-dev/hls.js).
-- We ship `hls.js` as a dependency, but it is only loaded **on demand**.
-  This keeps bundle size lean while avoiding runtime failures on non-Safari browsers.
+## ⚡ Performance
 
+- Target **55–60 FPS** on mid-range hardware
+- Lazy loading + dynamic imports (`hls.js` only loaded if needed)
+- Adaptive quality presets scale particle counts & resolution
+- Pauses rendering when tab is hidden
+- Lightweight, incremental re-renders
+
+---
+
+## 🔊 Audio
+
+- **PlaybackController** handles play/pause/seek/rate
+- **EQ**:
+  - `EqPanel.tsx` for UI
+  - `EQGraph.ts` connected to `AudioEngine.ensureEq()`
+  - Presets available, with gain/bypass toggles
+- **Output Device Management**:
+  - Migrated to `OutputDeviceManager`
+  - Accessible through `AudioDevicePicker.tsx`
+
+---
+
+## 📺 Visualizer
+
+- Single entry: `SceneCanvas.tsx`
+- Controlled by `SceneController.ts` (quality, uniforms, scene lifecycle)
+- Quality presets managed in `QualityPresets.ts`
+- Presets: Nebula, Glass Waves, Strobe Pulse
+- Stats overlay optional (`eh.dev.showStats` flag)
+
+---
+
+## 📡 HLS Playback
+
+- **Safari / iOS**: Native HLS support
+- **Chromium / Firefox**: Fallback to [`hls.js`](https://github.com/video-dev/hls.js)
+- `hls.js` is shipped as a dependency but loaded dynamically at runtime  
+  → Keeps bundle size lean while avoiding playback failures
+
+---
+
+## 🛠️ Development
+
+### Prerequisites
+
+- Node.js 18+
+- npm 9+ or yarn 3+
+
+### Install
+
+```bash
+npm install
+```
+
+### Run Dev
+
+```bash
+npm run dev
+```
+
+### Build
+
+```bash
+npm run build
+```
+
+### Preview
+
+```bash
+npm run preview
+```
+
+---
+
+## ✅ Accessibility Checklist
+
+- Keyboard navigation verified for all custom components
+- Proper ARIA roles in buttons, sliders, toggles
+- WCAG AA contrast enforced
+- Screen reader labels added where applicable
+
+---
+
+## 🧹 Code Quality
+
+- TypeScript strict mode
+- ESLint + Prettier configured
+  - ```tsc --noEmit```
+  - ```eslint . --ext .ts,.tsx```
+- CSS order lint rule ensures ```tokens.css``` always imports first
+
+---
+
+## 📜 Changelog (Highlights)
+
+- Removed experiments: Deprecated ```WebGLCanvas.tsx```, unified on ```SceneCanvas```
+- EQ Integration: ```EqPanel``` wired to ```AudioEngine.ensureEq()```
+- Device Management: Consolidated into ```OutputDeviceManager```
+- Settings Panel: Centralized HDR, Dimmer, Visualizer preset, and FPS stats
+- HLS Support: Added ```hls.js``` as dependency, documented Safari vs. Chromium path
+
+---
+
+## 🧭 Roadmap (V1)
+
+- Finalize presets & shader bundling
+- Add unit tests for EQ propagation
+- Tighten adaptive quality scaling for low-end devices
+- Minor polish for SettingsPanel UI
+
+---
+
+## 📄 License
+
+MIT © 2025 Ethereal Harmony contributors
