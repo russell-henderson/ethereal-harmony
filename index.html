@@ -1,14 +1,47 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/index.tsx"></script>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#1A2B45" />
+    <title>Ethereal Harmony</title>
 
+    <!-- Performance: preconnect for Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Typography: Montserrat 700 (titles) + Lato 400 (body) -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400&family=Montserrat:wght@700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- App styles: design tokens first, then globals -->
+    <link rel="stylesheet" href="/src/styles/tokens.css" />
+    <link rel="stylesheet" href="/src/styles/globals.css" />
+
+    <!-- PWA-friendly tags (safe to keep even if no manifest yet) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+  </head>
+
+  <body
+    style="
+      margin:0;
+      background:#1A2B45;
+      color:#ffffff;
+      font-family:'Lato', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    "
+  >
+    <noscript>Enable JavaScript to run Ethereal Harmony.</noscript>
+
+    <!-- Main mount point -->
+    <div id="root" role="main" aria-label="Ethereal Harmony Root"></div>
+
+    <!-- Entry script (Vite) -->
+    <script type="module" src="/src/index.tsx"></script>
   </body>
 </html>

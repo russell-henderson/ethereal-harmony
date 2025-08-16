@@ -448,3 +448,18 @@ input[type="range"]:focus-visible::-moz-range-thumb {
     scroll-behavior: auto !important;
   }
 }
+/* --------------------------------------------------
+   Glass utility for consistent styling across panels/cards
+   -------------------------------------------------- */
+.glass-panel {
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.title-font {
+  font-family: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial;
+  font-weight: 700;
+}
