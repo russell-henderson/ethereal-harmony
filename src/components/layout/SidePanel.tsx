@@ -1,9 +1,8 @@
 // src/components/layout/SidePanel.tsx
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
-import { getIcon } from "@/lib/utils/IconRegistry";
-// Store-driven routing per blueprint (Phase 1)
-// useUIStore is responsible for lightweight view switching (no React Router in V1)
+import { getIcon, type IconKey } from "@/lib/utils/IconRegistry";
+// Store-driven routing per blueprint (V1: no React Router)
 import { useUIStore } from "@/lib/state/useUIStore";
 
 /**
@@ -11,7 +10,7 @@ import { useUIStore } from "@/lib/state/useUIStore";
  * -----------------------------------------------------------------------------
  * Primary navigation rail (Library, Playlists, Discovery).
  * - Store-driven routing (no full router in V1).
- * - Glassmorphism styling via `eh-glass` class and tokens.
+ * - Glassmorphism styling via `eh-glass` token class.
  * - WCAG AA: high-contrast focus ring, clear aria-current, keyboard friendly.
  * - Motion: subtle press/hover scaled interactions, reduced when user prefers.
  */
@@ -21,14 +20,14 @@ type NavKey = "library" | "playlists" | "discovery";
 type NavItem = {
   key: NavKey;
   label: string;
-  icon: string; // IconRegistry id
+  icon: IconKey;          // IconRegistry semantic id
   ariaLabel?: string;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { key: "library", label: "Library", icon: "library", ariaLabel: "Go to Library" },
-  { key: "playlists", label: "Playlists", icon: "playlist", ariaLabel: "Go to Playlists" },
-  { key: "discovery", label: "Discovery", icon: "compass", ariaLabel: "Go to Discovery" },
+  { key: "library",   label: "Library",   icon: "nav.library",   ariaLabel: "Go to Library" },
+  { key: "playlists", label: "Playlists", icon: "nav.playlists", ariaLabel: "Go to Playlists" },
+  { key: "discovery", label: "Discovery", icon: "nav.discovery", ariaLabel: "Go to Discovery" },
 ];
 
 const SideLink: React.FC<{
@@ -45,8 +44,7 @@ const SideLink: React.FC<{
       onClick={() => onSelect(item.key)}
       aria-label={item.ariaLabel ?? item.label}
       aria-current={active ? "page" : undefined}
-      // Use button instead of anchor to avoid fake href and accidental page nav.
-      // Styling kept inline for component-scoped layout; colors via CSS vars.
+      // Button over anchor to avoid fake href; layout local, colors via CSS vars.
       style={{
         display: "grid",
         gridTemplateColumns: "24px 1fr",
@@ -75,13 +73,7 @@ const SideLink: React.FC<{
           justifyContent: "center",
         }}
       >
-        <Icon
-          width={20}
-          height={20}
-          // Icon color adheres to theme tokens
-          color="currentColor"
-          aria-hidden="true"
-        />
+        <Icon width={20} height={20} color="currentColor" aria-hidden="true" />
       </span>
       <span
         style={{
@@ -113,14 +105,7 @@ const SidePanel: React.FC = () => {
         flexDirection: "column",
         gap: 8,
         padding: 12,
-        // Glass tokens
-        background: "rgba(255,255,255,0.12)",
-        backdropFilter: "blur(16px) saturate(120%)",
-        WebkitBackdropFilter: "blur(16px) saturate(120%)",
-        border: "1px solid rgba(255,255,255,0.25)",
         borderRadius: 16,
-        boxShadow:
-          "0 8px 24px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.2)",
       }}
     >
       {/* Panel header / brand silhouette (future profiles; neutral avatar now) */}
@@ -140,19 +125,12 @@ const SidePanel: React.FC = () => {
             width: 28,
             height: 28,
             borderRadius: "50%",
-            background:
-              "linear-gradient(135deg, #1A2B45 0%, #7F6A9F 100%)",
+            background: "linear-gradient(135deg, #1A2B45 0%, #7F6A9F 100%)",
             boxShadow: "0 0 0 1px rgba(255,255,255,0.22) inset",
             flex: "0 0 auto",
           }}
         />
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            minWidth: 0,
-          }}
-        >
+        <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
           <span
             style={{
               fontFamily: 'Montserrat, ui-sans-serif, system-ui, "Segoe UI", Roboto',
@@ -183,7 +161,7 @@ const SidePanel: React.FC = () => {
         ))}
       </div>
 
-      {/* Optional footer actions could be placed here in Phase 2+ (Settings, Help) */}
+      {/* Optional footer actions (Phase 2+) */}
       <div style={{ marginTop: "auto", paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.12)" }}>
         <small
           style={{

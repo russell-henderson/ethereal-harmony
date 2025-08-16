@@ -1,96 +1,109 @@
-/**
- * IconRegistry — central, typed registry for all icons used in Ethereal Harmony.
- *
- * ✅ Provides a single source of truth for icons:
- *    - Import a component wrapper:   import { Icon } from "@/lib/utils/IconRegistry";
- *    - Get a raw component:          import { getIcon } from "@/lib/utils/IconRegistry";
- *    - Import the map (legacy):      import iconRegistry from "@/lib/utils/IconRegistry";
- *
- * This ensures consistent iconography across the app and avoids scattered `lucide-react` imports.
- */
+// src/lib/utils/IconRegistry.ts
+// Central icon registry with a tiny alias layer for back-compat.
+// If you see "[IconRegistry] Unknown icon key", either fix the call-site to a semantic key
+// or add a one-line alias below.
 
 import React from "react";
 import {
-  Play,
-  Pause,
+  Waves,
+  Library,
+  ListMusic,
+  Compass,
   SkipBack,
   SkipForward,
-  Repeat,
-  Repeat1,
-  Shuffle,
+  Play,
+  Pause,
   Volume2,
   VolumeX,
-  Music2,
-  SunMedium,
-  Moon,
-  MonitorSmartphone,
-  Settings2,
-  Loader2,
+  Disc3,
+  AudioWaveform,
+  Settings,
+  Search
 } from "lucide-react";
 
-/**
- * Union of all allowed icon keys.
- * Adding/removing icons? Update this type + registry below.
- */
-export type IconName =
-  | "play"
-  | "pause"
-  | "prev"
-  | "next"
-  | "repeat"
-  | "repeatOne"
-  | "shuffle"
-  | "volume"
-  | "mute"
-  | "music"
-  | "hdr"
-  | "dimmer"
-  | "devices"
+export type IconKey =
+  | "app"
+  | "search"
   | "settings"
-  | "spinner";
+  | "nav.library"
+  | "nav.playlists"
+  | "nav.discovery"
+  | "transport.prev"
+  | "transport.play"
+  | "transport.pause"
+  | "transport.next"
+  | "media.disc"
+  | "media.waveform"
+  | "volume.on"
+  | "volume.mute";
 
-/** Aliases for lucide-react components */
-type IconComponent = React.ComponentType<React.SVGProps<SVGSVGElement>>;
+export const iconMap: Record<IconKey, React.ComponentType<any>> = {
+  app: Waves,
+  search: Search,
+  settings: Settings,
 
-/** Canonical registry: maps `IconName` → Lucide component */
-export const iconRegistry: Record<IconName, IconComponent> = {
-  play: Play,
-  pause: Pause,
-  prev: SkipBack,
-  next: SkipForward,
-  repeat: Repeat,
-  repeatOne: Repeat1,
-  shuffle: Shuffle,
-  volume: Volume2,
-  mute: VolumeX,
-  music: Music2,
-  hdr: SunMedium,
-  dimmer: Moon,
-  devices: MonitorSmartphone,
-  settings: Settings2,
-  spinner: Loader2,
+  "nav.library": Library,
+  "nav.playlists": ListMusic,
+  "nav.discovery": Compass,
+
+  "transport.prev": SkipBack,
+  "transport.play": Play,
+  "transport.pause": Pause,
+  "transport.next": SkipForward,
+
+  "media.disc": Disc3,
+  "media.waveform": AudioWaveform,
+
+  "volume.on": Volume2,
+  "volume.mute": VolumeX
 };
 
 /**
- * Helper: safely fetch an icon component by name.
- * Falls back to `Music2` if unknown — prevents runtime crashes.
+ * Back-compat aliases. Map any legacy/"loose" names to the semantic keys above.
+ * NOTE: Keep this minimal and delete entries once you’ve updated call-sites.
  */
-export const getIcon = (name: IconName): IconComponent => {
-  return iconRegistry[name] ?? Music2;
+const aliasMap: Record<string, IconKey> = {
+  // Old generic names we’ve seen in the codebase:
+  music: "media.disc",
+  note: "media.disc",
+  prev: "transport.prev",
+  next: "transport.next",
+  play: "transport.play",
+  pause: "transport.pause",
+  library: "nav.library",
+  playlists: "nav.playlists",
+  discovery: "nav.discovery",
+  waveform: "media.waveform",
+  volume: "volume.on",
+  mute: "volume.mute",
+  settings: "settings",
+  search: "search",
+  app: "app"
 };
 
-/**
- * <Icon /> — tiny wrapper component that renders an icon by name.
- * Used in TopBar, PlaybackButtons, and anywhere else.
- */
-export type IconProps = React.SVGProps<SVGSVGElement> & {
-  name: IconName;
-  title?: string; // optional accessible title
-};
-export const Icon: React.FC<IconProps> = ({ name, title, ...svgProps }) => {
-  const Cmp = getIcon(name);
-  return <Cmp aria-hidden={!title} aria-label={title} {...svgProps} />;
+const normalize = (key: string): IconKey | undefined => {
+  // Exact match to a semantic key?
+  if ((iconMap as any)[key]) return key as IconKey;
+  // Resolve alias (case-insensitive, tolerate stray spaces)
+  const k = key.trim().toLowerCase();
+  return aliasMap[k];
 };
 
-/** Default export kept for legacy imports */
-export default iconRegistry;
+export const getIcon = (key: IconKey | string): React.ComponentType<any> => {
+  const normalized = normalize(String(key));
+  if (!normalized) {
+    throw new Error(`[IconRegistry] Unknown icon key: "${key}"`);
+  }
+  return iconMap[normalized];
+};
+
+export const Icon: React.FC<
+  { name: IconKey | string } & React.ComponentProps<"svg">
+> = ({ name, ...svgProps }) => {
+  const Comp = getIcon(name);
+  return <Comp aria-hidden focusable="false" {...svgProps} />;
+};
+
+// Back-compat default export (you can remove once all imports are named).
+const IconRegistry = { getIcon, Icon, iconMap };
+export default IconRegistry;

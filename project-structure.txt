@@ -55,8 +55,7 @@ ethereal-harmony/
 │   │       ├── index.ts
 │   │       ├── ParticlesCanvas.tsx
 │   │       ├── PresetSelector.tsx
-│   │       ├── SceneCanvas.tsx
-│   │       └── WebGLCanvas.tsx
+│   │       └── SceneCanvas.tsx
 │   ├── lib/
 │   │   ├── audio/
 │   │   │   ├── AnalyserBus.ts
@@ -116,6 +115,7 @@ ethereal-harmony/
 │   └── vite-env.d.ts
 ├── .gitignore
 ├── eslint.config.js
+├── ethereal-harmony.zip
 ├── index.html
 ├── package-lock.json
 ├── package.json

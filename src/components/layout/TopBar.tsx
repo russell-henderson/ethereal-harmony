@@ -2,65 +2,68 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Icon } from "@/lib/utils/IconRegistry";
 import { motion } from "framer-motion";
-// If you have a search store or handler, import it here:
-// import { useUIStore } from "@/lib/state/useUIStore";
 
 type TopBarProps = {
-  onSearchChange?: (q: string) => void; // optional external search handler
-  onOpenSettings?: () => void;          // optional settings open handler
+  onSearchChange?: (q: string) => void;
+  onOpenSettings?: () => void;
 };
 
 const DEBOUNCE_MS = 250;
 
 /**
  * TopBar
- * - Brand + neutral silhouette (future social hint)
- * - Debounced search input
- * - Settings button
- *
- * A11y: proper labels, focus ring, minimum hit targets.
- * Glassmorphism styling relies on global utility classes per our tokens.
+ * - Left: brand icon + title + neutral silhouette
+ * - Center: debounced search
+ * - Right: settings button
+ * A11y: labels, focus order, keyboard shortcut for search (/)
  */
 const TopBar: React.FC<TopBarProps> = ({ onSearchChange, onOpenSettings }) => {
   const [query, setQuery] = useState("");
   const debounceRef = useRef<number | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Debounce search updates
+  // Debounce external search updates
   useEffect(() => {
-    if (debounceRef.current) {
-      window.clearTimeout(debounceRef.current);
-    }
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
     debounceRef.current = window.setTimeout(() => {
       onSearchChange?.(query.trim());
-      // If you wire to a store, do it here:
-      // useUIStore.getState().setSearch(query.trim());
     }, DEBOUNCE_MS);
-
     return () => {
       if (debounceRef.current) window.clearTimeout(debounceRef.current);
     };
   }, [query, onSearchChange]);
 
+  // Press "/" to focus search unless typing in an input already
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "/") return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea" || (target as any)?.isContentEditable) return;
+      e.preventDefault();
+      inputRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const handleOpenSettings = () => {
-    // Prefer external handler if provided; you can also wire to a modal store here
     onOpenSettings?.();
-    // useUIStore.getState().openSettings();
   };
 
   return (
     <header
-      className="topbar glass-surface"
+      className="topbar eh-glass glass-surface"
       role="banner"
       aria-label="Application top bar"
     >
-      {/* Left: Brand + silhouette */}
-      <div className="topbar__left">
+      {/* Left: brand + silhouette */}
+      <div className="topbar__left" aria-label="Brand">
         <span className="brandmark" aria-hidden>
-          <Icon name="music" width={18} height={18} />
+          <Icon name="app" width={18} height={18} />
         </span>
         <h1 className="topbar__title">Ethereal Harmony</h1>
-
-        {/* Neutral silhouette to hint upcoming profiles (always present per blueprint) */}
+        {/* Neutral silhouette: always shown per blueprint */}
         <div
           className="topbar__silhouette"
           role="img"
@@ -69,12 +72,13 @@ const TopBar: React.FC<TopBarProps> = ({ onSearchChange, onOpenSettings }) => {
         />
       </div>
 
-      {/* Center: Search */}
+      {/* Center: search */}
       <div className="topbar__center">
         <label htmlFor="eh-search" className="sr-only">
           Search library
         </label>
         <input
+          ref={inputRef}
           id="eh-search"
           className="topbar__search input-glass"
           type="search"
@@ -84,9 +88,13 @@ const TopBar: React.FC<TopBarProps> = ({ onSearchChange, onOpenSettings }) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
+        {/* Optional inline icon for visual affordance; purely decorative */}
+        <span className="topbar__searchIcon" aria-hidden>
+          <Icon name="search" width={16} height={16} />
+        </span>
       </div>
 
-      {/* Right: Settings */}
+      {/* Right: settings */}
       <div className="topbar__right">
         <motion.button
           type="button"
