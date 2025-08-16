@@ -1,4 +1,4 @@
-![ethereal-harmony](ethereal-harmony/src/assets/title.jpg "ethereal harmony")
+![alt text]([http://url/to/img.png](https://i.ibb.co/4DNpv2x/title.jpg))
 
 # 🎶 Ethereal Harmony
 
