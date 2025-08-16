@@ -31,9 +31,9 @@
  */
 
 import React from "react";
-import PresetSelector from "@/components/settings/PresetSelector";
-import HdrToggle from "@/components/settings/HdrToggle";
-import DimmerToggle from "@/components/settings/DimmerToggle";
+import PresetSelector from "@/components/visualizer/PresetSelector";
+import HdrToggle from "@/components/visualizer/HdrToggle";
+import DimmerToggle from "@/components/visualizer/DimmerToggle";
 import EqPanel from "@/components/settings/EqPanel";
 import AudioDevicePicker from "@/components/settings/AudioDevicePicker";
 

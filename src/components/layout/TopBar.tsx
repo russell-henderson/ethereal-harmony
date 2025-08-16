@@ -1,7 +1,7 @@
 // src/components/layout/TopBar.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import Icon from "@/lib/utils/IconRegistry";
+import { Icon, getIcon } from "@/lib/utils/IconRegistry";
 import { useHotkeys } from "@/lib/utils/useHotkeys";
 // Store-driven UI (V1): lightweight view switching and modals
 import { useUIStore } from "@/lib/state/useUIStore";
