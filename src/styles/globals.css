@@ -1,10 +1,10 @@
 /* ==========================================================================
-   Ethereal Harmony — Global Styles
-   - Tokens via CSS variables
-   - Minimal reset
-   - Glassmorphism utilities
+   Ethereal Harmony — Global Styles (V1)
+   - Design tokens (palette, radii, blur, typography)
+   - Minimal, modern reset
+   - Glassmorphism utilities (cards, buttons, inputs)
    - Accessible focus ring + reduced motion guard
-   - Component-friendly utilities (cards, buttons, segments)
+   - Component hooks used across the app (TopBar, PlayerCard, Transport)
    ========================================================================== */
 
 /* --------------------------------------------------
@@ -13,42 +13,49 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Lato:wght@400&display=swap");
 
 /* --------------------------------------------------
-   Root tokens (dark by default)
-   Toggle light/dark by applying .theme-dark / .theme-light on <html> or <body>
+   Root tokens (Dark first — our primary theme)
+   Toggle .theme-dark / .theme-light on <html> or <body> if needed.
    -------------------------------------------------- */
 :root,
 :root.theme-dark {
   /* Brand palette */
-  --eh-bg: #1A2B45;             /* Deep Indigo (Primary Background) */
-  --eh-accent: #7F6A9F;         /* Soft Lavender (Primary Accent) */
-  --eh-highlight: #00F0FF;      /* Radiant Aqua (Interactive/Focus) */
+  --eh-indigo: #1A2B45;     /* Primary Background (Deep Indigo) */
+  --eh-lavender: #7F6A9F;   /* Primary Accent (Soft Lavender) */
+  --eh-aqua: #00F0FF;       /* Highlight/Interactive (Radiant Aqua) */
 
-  /* Text on deep indigo background (meets AA) */
+  /* Text colors for dark surfaces (AA/AAA against indigo) */
   --eh-text: #EAF1FF;
   --eh-text-muted: #C8D3EA;
   --eh-text-subtle: #A6B6D6;
 
-  /* Glass tokens */
+  /* Glass tokens (strict) */
   --eh-glass-bg: rgba(255, 255, 255, 0.12);
-  --eh-glass-bg-strong: rgba(26, 43, 69, 0.30); /* dark overlay to ensure AA on dynamic backdrops */
-  --eh-glass-border: 1px solid rgba(255, 255, 255, 0.25);
+  /* Stronger overlay for small text over bright visuals to keep AA */
+  --eh-glass-bg-strong: rgba(26, 43, 69, 0.30);
+  --eh-glass-border-color: rgba(255, 255, 255, 0.25);
+  --eh-glass-border: 1px solid var(--eh-glass-border-color);
   --eh-glass-radius: 16px;
   --eh-glass-blur: 16px;
 
-  /* Elevation (kept modest for performance) */
+  /* Elevation */
   --eh-shadow-1: 0 8px 24px rgba(0, 0, 0, 0.28);
   --eh-shadow-2: 0 12px 32px rgba(0, 0, 0, 0.32);
 
-  /* Focus ring */
-  --eh-focus-outer: 2px solid var(--eh-highlight);
+  /* Focus ring (keyboard only) */
+  --eh-focus-outer: 2px solid var(--eh-aqua);
   --eh-focus-offset: 2px;
   --eh-focus-glow: 0 0 0 3px rgba(0, 240, 255, 0.25);
+
+  /* TopBar surface (E: ensure indigo tone, slight translucency) */
+  --eh-topbar-bg: rgba(26, 43, 69, 0.92);
+  --eh-topbar-border: rgba(255, 255, 255, 0.12);
+  --eh-topbar-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
 
   /* Typography */
   --eh-font-title: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   --eh-font-body: "Lato", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 
-  /* Type scale */
+  /* Type scale (root 16) */
   --eh-fs-xxl: 28px;
   --eh-fs-xl: 22px;
   --eh-fs-lg: 18px;
@@ -56,73 +63,79 @@
   --eh-fs-sm: 14px;
   --eh-fs-xs: 12px;
 
-  /* Layout spacing */
-  --eh-gap-xs: 4px;
-  --eh-gap-sm: 6px;
-  --eh-gap-md: 12px;
-  --eh-gap-lg: 16px;
-  --eh-gap-xl: 24px;
+  /* Spacing */
+  --eh-gap-2: 2px;
+  --eh-gap-4: 4px;
+  --eh-gap-6: 6px;
+  --eh-gap-8: 8px;
+  --eh-gap-12: 12px;
+  --eh-gap-16: 16px;
+  --eh-gap-24: 24px;
 
-  /* Component specifics */
-  --eh-button-radius: 12px;
-  --eh-chip-radius: 12px;
+  /* Shape tokens for controls */
+  --eh-radius-16: 16px;
+  --eh-radius-12: 12px;
+  --eh-radius-10: 10px;
 
-  /* Range inputs */
-  --eh-range-track: rgba(255, 255, 255, 0.15);
-  --eh-range-thumb: var(--eh-highlight);
+  /* Range/slider */
+  --eh-range-track: rgba(255, 255, 255, 0.16);
+  --eh-range-thumb: var(--eh-aqua);
 
-  /* Container */
+  /* Layout container */
   --eh-container-max: 1280px;
   --eh-container-pad: 16px;
 
-  /* Z-layers (keep small to help compositors) */
+  /* Z-layers (keep sparse for perf) */
   --eh-z-overlay: 30;
   --eh-z-toast: 40;
   --eh-z-modal: 50;
 }
 
-/* Optional light theme */
+/* Light theme option — we keep glass stronger to hold contrast */
 :root.theme-light {
-  --eh-bg: #f6f7fb;
+  --eh-indigo: #f6f7fb;       /* page bg */
   --eh-text: #0c1630;
   --eh-text-muted: #364564;
   --eh-text-subtle: #4d5c7a;
 
-  /* Slightly stronger glass on light to maintain contrast */
   --eh-glass-bg: rgba(26, 43, 69, 0.08);
   --eh-glass-bg-strong: rgba(26, 43, 69, 0.16);
-  --eh-glass-border: 1px solid rgba(26, 43, 69, 0.18);
+  --eh-glass-border-color: rgba(26, 43, 69, 0.18);
+  --eh-glass-border: 1px solid var(--eh-glass-border-color);
+
+  --eh-topbar-bg: rgba(255, 255, 255, 0.82);
+  --eh-topbar-border: rgba(26, 43, 69, 0.16);
+  --eh-topbar-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
 }
 
-/* Respect OS theme as a baseline (overridden by .theme-* classes) */
+/* Respect OS theme when no explicit theme class is set */
 @media (prefers-color-scheme: light) {
   :root:not(.theme-dark):not(.theme-light) {
-    --eh-bg: #f6f7fb;
+    --eh-indigo: #f6f7fb;
     --eh-text: #0c1630;
     --eh-text-muted: #364564;
     --eh-text-subtle: #4d5c7a;
     --eh-glass-bg: rgba(26, 43, 69, 0.08);
     --eh-glass-bg-strong: rgba(26, 43, 69, 0.16);
-    --eh-glass-border: 1px solid rgba(26, 43, 69, 0.18);
+    --eh-glass-border-color: rgba(26, 43, 69, 0.18);
+    --eh-glass-border: 1px solid var(--eh-glass-border-color);
+    --eh-topbar-bg: rgba(255, 255, 255, 0.82);
+    --eh-topbar-border: rgba(26, 43, 69, 0.16);
+    --eh-topbar-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
   }
 }
 
 /* --------------------------------------------------
-   Minimal reset (keep bundle small)
+   Minimal modern reset (kept small to respect bundle)
    -------------------------------------------------- */
 *,
 *::before,
 *::after { box-sizing: border-box; }
-
-html, body, #root {
-  height: 100%;
-}
-
+html, body, #root { height: 100%; }
 html { -webkit-text-size-adjust: 100%; }
-
 body {
   margin: 0;
-  background: var(--eh-bg);
+  background: var(--eh-indigo);
   color: var(--eh-text);
   font-family: var(--eh-font-body);
   font-size: var(--eh-fs-md);
@@ -130,56 +143,28 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
-/* Avoid theme flash on first paint (store sets classes early) */
-html { visibility: visible; }
-
-/* Links – brand-aligned and accessible */
-a {
-  color: var(--eh-highlight);
-  text-decoration: none;
-}
-a:hover,
-a:focus-visible {
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-/* Lists */
+img, picture, video, canvas, svg { display: block; max-width: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; background: transparent; border: none; }
+a { color: var(--eh-aqua); text-decoration: none; }
+a:hover, a:focus-visible { text-decoration: underline; text-underline-offset: 2px; }
 ul, ol { padding-inline-start: 1.25rem; }
-
-/* Images/videos do not exceed container */
-img, video { max-width: 100%; height: auto; }
-
-/* Buttons & inputs baseline */
-button, input, select, textarea {
-  font: inherit;
-  color: inherit;
-  background: transparent;
-  border: none;
-}
+::selection { background: color-mix(in oklab, var(--eh-aqua) 30%, transparent); }
 
 /* --------------------------------------------------
-   Headings & Titles
+   Typography
    -------------------------------------------------- */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--eh-font-title);
   color: var(--eh-text);
-  margin: 0 0 var(--eh-gap-md);
+  margin: 0 0 var(--eh-gap-12);
 }
 h1 { font-size: var(--eh-fs-xxl); letter-spacing: 0.5px; }
 h2 { font-size: var(--eh-fs-xl); letter-spacing: 0.4px; }
 h3 { font-size: var(--eh-fs-lg); letter-spacing: 0.3px; }
-
-/* Utility title class for component headers */
-.eh-title {
-  font-family: var(--eh-font-title);
-  letter-spacing: 0.5px;
-  color: var(--eh-text);
-}
+.eh-title { font-family: var(--eh-font-title); letter-spacing: 0.5px; }
 
 /* --------------------------------------------------
-   Accessible focus ring — keyboard only
+   Accessibility — keyboard focus ring (only when visible)
    -------------------------------------------------- */
 :where(
   button,
@@ -195,21 +180,7 @@ h3 { font-size: var(--eh-fs-lg); letter-spacing: 0.3px; }
   box-shadow: var(--eh-focus-glow);
 }
 :focus:not(:focus-visible) { outline: none; }
-
-/* --------------------------------------------------
-   Utilities: layout & a11y
-   -------------------------------------------------- */
-.eh-container {
-  width: 100%;
-  max-width: var(--eh-container-max);
-  margin-inline: auto;
-  padding-inline: var(--eh-container-pad);
-}
-
-.eh-hstack { display: flex; align-items: center; gap: var(--eh-gap-md); }
-.eh-vstack { display: flex; flex-direction: column; gap: var(--eh-gap-md); }
-.eh-clamp { max-width: 70ch; }
-
+/* Screen reader only utility */
 .sr-only,
 .visually-hidden {
   position: absolute !important;
@@ -219,195 +190,167 @@ h3 { font-size: var(--eh-fs-lg); letter-spacing: 0.3px; }
   white-space: nowrap; border: 0;
 }
 
-/* Text selection */
-::selection {
-  background: color-mix(in oklab, var(--eh-highlight) 30%, transparent);
-}
+/* --------------------------------------------------
+   Layout utilities
+   -------------------------------------------------- */
+.eh-container { width: 100%; max-width: var(--eh-container-max); margin-inline: auto; padding-inline: var(--eh-container-pad); }
+.eh-hstack { display: flex; align-items: center; gap: var(--eh-gap-12); }
+.eh-vstack { display: flex; flex-direction: column; gap: var(--eh-gap-12); }
+.eh-clamp { max-width: 70ch; }
 
 /* --------------------------------------------------
    Glassmorphism building blocks
    -------------------------------------------------- */
-
-/* Generic glass surface */
+/* Generic glass surface (cards, panels) */
 .eh-glass {
   background: var(--eh-glass-bg);
   backdrop-filter: blur(var(--eh-glass-blur)) saturate(120%);
+  -webkit-backdrop-filter: blur(var(--eh-glass-blur)) saturate(120%);
   border: var(--eh-glass-border);
   border-radius: var(--eh-glass-radius);
   box-shadow: var(--eh-shadow-1), inset 0 1px 0 rgba(255,255,255,0.20);
 }
-
-/* Stronger glass for small text over bright visuals (ensures AA) */
+/* Stronger variant for small text areas (AA on bright viz) */
 .eh-glass--strong {
   background:
     linear-gradient(0deg, var(--eh-glass-bg-strong), var(--eh-glass-bg-strong)),
     var(--eh-glass-bg);
-  backdrop-filter: blur(var(--eh-glass-blur)) saturate(120%);
 }
+/* Card helper */
+.eh-card { padding: var(--eh-gap-16); border-radius: var(--eh-glass-radius); }
 
-/* Card surface (common pattern across panels) */
-.eh-card {
-  composes: eh-glass;
-  padding: var(--eh-gap-lg);
-  border-radius: var(--eh-glass-radius);
-}
+/* Canvas layer (WebGL sits beneath UI) */
+.eh-canvas-wrap { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.eh-content-layer { position: relative; z-index: 1; }
 
-/* Controls grid (presets left, toggles right) */
-.eh-controls-grid {
+/* --------------------------------------------------
+   TopBar (D/E/F items from screenshot)
+   -------------------------------------------------- */
+.topbar {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr minmax(300px, 42%) auto;
   align-items: center;
-  gap: var(--eh-gap-md);
-  padding: var(--eh-gap-md);
+  gap: var(--eh-gap-12);
+  padding: 10px 14px;
+  background: var(--eh-topbar-bg);             /* Deep Indigo translucent */
+  border: 1px solid var(--eh-topbar-border);
+  border-radius: var(--eh-radius-16);
+  box-shadow: var(--eh-topbar-shadow);
 }
-
-/* Canvas wrapper sits behind content */
-.eh-canvas-wrap {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
+.topbar__left { display: flex; align-items: center; gap: var(--eh-gap-10, 10px); }
+.topbar__title { font-family: var(--eh-font-title); font-weight: 700; font-size: 14px; letter-spacing: .4px; color: #fff; }
+/* E: Status light — aqua glow indicating ready/online */
+.topbar__status {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--eh-aqua);
+  box-shadow: 0 0 10px var(--eh-aqua), 0 0 20px rgba(0,240,255,.6);
+  margin-left: 8px;
 }
-
-/* Foreground content layer (AppShell uses this) */
-.eh-content-layer {
-  position: relative;
-  z-index: 1;
-}
-
-/* --------------------------------------------------
-   Segmented control (PresetSelector)
-   -------------------------------------------------- */
-.eh-segment {
-  display: inline-flex;
-  gap: var(--eh-gap-sm);
-  padding: var(--eh-gap-sm);
-  border-radius: calc(var(--eh-chip-radius) + 4px);
-  background: color-mix(in oklab, var(--eh-glass-bg) 80%, transparent);
-  border: var(--eh-glass-border);
-  backdrop-filter: blur(var(--eh-glass-blur));
-}
-
-.eh-segment__item {
-  font-family: var(--eh-font-body);
-  color: var(--eh-text);
-  background: var(--eh-glass-bg);
-  border: var(--eh-glass-border);
-  border-radius: var(--eh-chip-radius);
-  padding: 8px 12px;
-  cursor: pointer;
-  user-select: none;
-  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
-}
-
-.eh-segment__item:hover { transform: translateY(-1px); }
-.eh-segment__item:active { transform: translateY(0); }
-
-.eh-segment__item.is-selected {
-  /* Radiant Aqua ring (subtle) while maintaining glass look */
-  box-shadow: 0 0 0 2px var(--eh-highlight);
-  background: color-mix(in oklab, var(--eh-highlight) 18%, var(--eh-glass-bg));
-}
-
-.eh-segment__item:focus-visible {
-  outline: var(--eh-focus-outer);
-  outline-offset: var(--eh-focus-offset);
-}
-
-/* --------------------------------------------------
-   Glass buttons (HdrToggle / DimmerToggle / generic)
-   -------------------------------------------------- */
-.eh-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 36px;
+/* Center search input styling (glass) */
+.input-glass {
+  width: 100%; max-width: 560px; height: 38px;
   padding: 0 12px;
-  border-radius: var(--eh-button-radius);
-  border: var(--eh-glass-border);
+  border-radius: var(--eh-radius-12);
   background: var(--eh-glass-bg);
-  color: var(--eh-text);
-  cursor: pointer;
-  user-select: none;
-  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
-  will-change: transform;
-}
-.eh-btn:hover { transform: translateY(-1px); box-shadow: var(--eh-shadow-2); }
-.eh-btn:active { transform: translateY(0); }
-.eh-btn[aria-pressed="true"],
-.eh-btn.is-active {
-  background: color-mix(in oklab, var(--eh-highlight) 20%, var(--eh-glass-bg));
-  border-color: color-mix(in oklab, var(--eh-highlight) 60%, rgba(255,255,255,0.25));
-}
-.eh-btn:focus-visible {
-  outline: var(--eh-focus-outer);
-  outline-offset: var(--eh-focus-offset);
-}
-
-/* Icon-only buttons shape */
-.eh-iconbtn {
-  width: 36px; height: 36px;
-  padding: 0;
-  border-radius: 10px;
-}
-
-/* --------------------------------------------------
-   Range inputs (sliders: intensity, bloom, dimmer)
-   -------------------------------------------------- */
-input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 2px;
-  background: var(--eh-range-track);
-  border-radius: 999px;
-  outline: none;
-}
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  background: var(--eh-range-thumb);
-  border: 2px solid rgba(0,0,0,0.15);
-  margin-top: -6px; /* centers the thumb on the 2px track */
-}
-input[type="range"]::-moz-range-thumb {
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  background: var(--eh-range-thumb);
-  border: 2px solid rgba(0,0,0,0.15);
-}
-input[type="range"]:focus-visible::-webkit-slider-thumb,
-input[type="range"]:focus-visible::-moz-range-thumb {
-  box-shadow: var(--eh-focus-glow);
-}
-
-/* --------------------------------------------------
-   Form fields (search in TopBar, etc.)
-   -------------------------------------------------- */
-.eh-input {
-  width: 100%;
-  height: 38px;
-  padding: 0 12px;
-  border-radius: 12px;
   border: var(--eh-glass-border);
-  background: var(--eh-glass-bg);
   color: var(--eh-text);
   outline: none;
   transition: box-shadow 120ms ease, background-color 120ms ease;
   backdrop-filter: blur(var(--eh-glass-blur));
 }
-.eh-input::placeholder { color: var(--eh-text-subtle); }
-.eh-input:focus-visible {
-  outline: var(--eh-focus-outer);
-  outline-offset: var(--eh-focus-offset);
-  box-shadow: var(--eh-focus-glow);
+.input-glass::placeholder { color: var(--eh-text-subtle); }
+.input-glass:focus-visible { outline: var(--eh-focus-outer); outline-offset: var(--eh-focus-offset); box-shadow: var(--eh-focus-glow); }
+
+/* --------------------------------------------------
+   Buttons (glass) — used across toolbar/transport/etc.
+   -------------------------------------------------- */
+.glass-btn {
+  min-width: 44px; min-height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0 12px;
+  border-radius: var(--eh-radius-12);
+  background: var(--eh-glass-bg);
+  border: var(--eh-glass-border);
+  color: var(--eh-text);
+  cursor: pointer; user-select: none;
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+  will-change: transform;
+}
+.glass-btn:hover { transform: translateY(-1px); box-shadow: var(--eh-shadow-2); }
+.glass-btn:active { transform: translateY(0); }
+.glass-btn[aria-pressed="true"], .glass-btn.is-active {
+  background: color-mix(in oklab, var(--eh-aqua) 20%, var(--eh-glass-bg));
+  border-color: color-mix(in oklab, var(--eh-aqua) 60%, var(--eh-glass-border-color));
+}
+/* Primary emphasis (center play/pause) */
+.glass-btn--primary {
+  background: color-mix(in oklab, var(--eh-aqua) 12%, var(--eh-glass-bg));
+  border-color: color-mix(in oklab, var(--eh-aqua) 45%, var(--eh-glass-border-color));
+}
+
+/* Icon-only variation */
+.eh-iconbtn { width: 36px; height: 36px; padding: 0; border-radius: var(--eh-radius-10); }
+
+/* --------------------------------------------------
+   Transport / Playback cluster layout (A/B/C)
+   -------------------------------------------------- */
+.playback-buttons {
+  display: flex; align-items: center; gap: var(--eh-gap-8);
+}
+.playback-buttons__spacer {
+  flex: 1 1 auto;
 }
 
 /* --------------------------------------------------
-   Scrollbar (WebKit) — minimal styling for dark bg
+   Range inputs (sliders: intensity, bloom, volume)
+   -------------------------------------------------- */
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 2px;
+  background: var(--eh-range-track);
+  border-radius: 999px; outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--eh-range-thumb); border: 2px solid rgba(0,0,0,0.15);
+  margin-top: -6px; /* center thumb on track */
+}
+input[type="range"]::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--eh-range-thumb); border: 2px solid rgba(0,0,0,0.15);
+}
+input[type="range"]:focus-visible::-webkit-slider-thumb,
+input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: var(--eh-focus-glow); }
+
+/* --------------------------------------------------
+   Segmented control (PresetSelector)
+   -------------------------------------------------- */
+.eh-segment {
+  display: inline-flex; gap: var(--eh-gap-6); padding: var(--eh-gap-6);
+  border-radius: calc(var(--eh-radius-12) + 4px);
+  background: color-mix(in oklab, var(--eh-glass-bg) 80%, transparent);
+  border: var(--eh-glass-border);
+  backdrop-filter: blur(var(--eh-glass-blur));
+}
+.eh-segment__item {
+  color: var(--eh-text);
+  background: var(--eh-glass-bg);
+  border: var(--eh-glass-border);
+  border-radius: var(--eh-radius-12);
+  padding: 8px 12px; cursor: pointer; user-select: none;
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+.eh-segment__item:hover { transform: translateY(-1px); }
+.eh-segment__item:active { transform: translateY(0); }
+.eh-segment__item.is-selected {
+  box-shadow: 0 0 0 2px var(--eh-aqua);
+  background: color-mix(in oklab, var(--eh-aqua) 18%, var(--eh-glass-bg));
+}
+.eh-segment__item:focus-visible { outline: var(--eh-focus-outer); outline-offset: var(--eh-focus-offset); }
+
+/* --------------------------------------------------
+   Scrollbar (WebKit) — subtle for dark UI
    -------------------------------------------------- */
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-thumb {
@@ -419,26 +362,25 @@ input[type="range"]:focus-visible::-moz-range-thumb {
 *::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.28); }
 
 /* --------------------------------------------------
-   Toasts & overlays (z-layers)
+   Overlays / Toasts
    -------------------------------------------------- */
 .eh-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--eh-z-overlay);
-  display: grid;
-  place-items: center;
+  position: fixed; inset: 0; z-index: var(--eh-z-overlay);
+  display: grid; place-items: center;
   background: rgba(0,0,0,0.35);
   backdrop-filter: blur(6px);
 }
 .eh-toast {
   z-index: var(--eh-z-toast);
-  composes: eh-glass;
-  padding: var(--eh-gap-lg);
+  background: var(--eh-glass-bg);
+  border: var(--eh-glass-border);
   border-radius: var(--eh-glass-radius);
+  padding: var(--eh-gap-16);
+  box-shadow: var(--eh-shadow-1), inset 0 1px 0 rgba(255,255,255,0.20);
 }
 
 /* --------------------------------------------------
-   Reduced motion — respect user preferences
+   Reduced motion — respect user preference
    -------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -448,8 +390,9 @@ input[type="range"]:focus-visible::-moz-range-thumb {
     scroll-behavior: auto !important;
   }
 }
+
 /* --------------------------------------------------
-   Glass utility for consistent styling across panels/cards
+   Legacy helpers kept for compatibility with current code
    -------------------------------------------------- */
 .glass-panel {
   border-radius: 16px;
@@ -458,8 +401,7 @@ input[type="range"]:focus-visible::-moz-range-thumb {
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.25);
 }
-
 .title-font {
-  font-family: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial;
+  font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
   font-weight: 700;
 }
