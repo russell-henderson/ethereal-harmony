@@ -1,4 +1,11 @@
-![alt text]([http://url/to/img.png](https://i.ibb.co/4DNpv2x/title.jpg))
+<picture width="500">
+  <img
+    src="https://github.com/russell-henderson/ethereal-harmony/blob/master/src/assets/title.jpg?raw=true"
+    alt="Ethereal Harmony Music App"
+  />
+</picture>
+
+
 
 # 🎶 Ethereal Harmony
 
