@@ -232,7 +232,7 @@ const PlayerCard: React.FC = () => {
           onClick={onPrev}
           title="Previous"
         >
-          <Icon name="skip-back" aria-hidden="true" />
+          <Icon name="transport.prev" aria-hidden="true" />
         </button>
 
         <button
@@ -244,7 +244,7 @@ const PlayerCard: React.FC = () => {
           title={isPlaying ? "Pause (Space)" : "Play (Space)"}
           style={{ width: 44, height: 44 }}
         >
-          <Icon name={isPlaying ? "pause" : "play"} aria-hidden="true" />
+          <Icon name={isPlaying ? "transport.pause" : "transport.play"} aria-hidden="true" />
         </button>
 
         <button
@@ -254,7 +254,7 @@ const PlayerCard: React.FC = () => {
           onClick={onNext}
           title="Next"
         >
-          <Icon name="skip-forward" aria-hidden="true" />
+          <Icon name="transport.next" aria-hidden="true" />
         </button>
       </div>
 
@@ -293,7 +293,7 @@ const PlayerCard: React.FC = () => {
           onClick={onMute}
           title={muted ? "Unmute" : "Mute"}
         >
-          <Icon name={muted || volume === 0 ? "volume-x" : volume < 0.5 ? "volume-1" : "volume-2"} aria-hidden="true" />
+          <Icon name={muted || volume === 0 ? "volume.mute" : "volume.on"} aria-hidden="true" />
         </button>
 
         <label className="eh-hstack" style={{ gap: 8, flex: 1, marginInline: 12 }}>

@@ -1,3 +1,5 @@
+![ethereal-harmony](ethereal-harmony/src/assets/title.jpg "ethereal harmony")
+
 # 🎶 Ethereal Harmony
 
 A high-performance, immersive web audio player with a real-time, audio-reactive Three.js visualizer and a sleek glassmorphism UI. Built for speed, accessibility, and trust — all data stays local by default.
