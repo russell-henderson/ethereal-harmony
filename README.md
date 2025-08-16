@@ -46,24 +46,9 @@ You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-re
 import reactX from 'eslint-plugin-react-x'
 import reactDom from 'eslint-plugin-react-dom'
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### HLS Playback
+- **Safari / iOS:** HLS streams play natively.
+- **Chromium / Firefox:** Fallback path uses [`hls.js`](https://github.com/video-dev/hls.js).
+- We ship `hls.js` as a dependency, but it is only loaded **on demand**.
+  This keeps bundle size lean while avoiding runtime failures on non-Safari browsers.
+
