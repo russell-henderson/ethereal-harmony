@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "centerFrequencies": [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000],
+  "presets": [
+    { "name": "Flat", "gains": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+    { "name": "Rock", "gains": [4, 3, 2, 1, 0, 0, 1, 2, 3, 4] },
+    { "name": "Pop", "gains": [0, 2, 3, 2, 0, -1, -1, 0, 2, 3] },
+    { "name": "Electronic", "gains": [5, 4, 2, 0, -1, 0, 1, 3, 4, 5] },
+    { "name": "Jazz", "gains": [-1, 0, 1, 2, 2, 2, 1, 0, -1, -2] },
+    { "name": "Classical", "gains": [-2, -1, 0, 1, 2, 2, 1, 0, 1, 2] },
+    { "name": "Acoustic", "gains": [0, 0, 1, 2, 2, 1, 1, 1, 0, 0] },
+    { "name": "Bass Boost", "gains": [6, 5, 4, 2, 0, -1, -2, -3, -4, -5] },
+    { "name": "Treble Boost", "gains": [-4, -3, -2, -1, 0, 1, 3, 4, 5, 6] },
+    { "name": "Vocal Boost", "gains": [-4, -3, -1, 1, 3, 4, 3, 1, 0, -1] },
+    { "name": "Lounge", "gains": [2, 1, 0, -1, 0, 0, 0, 1, 2, 3] }
+  ]
+}

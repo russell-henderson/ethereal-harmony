@@ -1,0 +1,127 @@
+ethereal-harmony/
+├── public/
+│   ├── test.mp3
+│   └── vite.svg
+├── scripts/
+│   └── export-tree.mjs
+├── src/
+│   ├── app/
+│   │   ├── providers/
+│   │   │   ├── ErrorProvider.tsx
+│   │   │   ├── MotionProvider.tsx
+│   │   │   └── ThemeProvider.tsx
+│   │   ├── App.tsx
+│   │   └── routes.tsx
+│   ├── assets/
+│   │   └── react.svg
+│   ├── components/
+│   │   ├── diagnostics/
+│   │   │   ├── DevToggle.tsx
+│   │   │   └── PerfOverlayMount.tsx
+│   │   ├── feedback/
+│   │   │   ├── ErrorBoundary.tsx
+│   │   │   └── Toasts.tsx
+│   │   ├── layout/
+│   │   │   ├── AppChrome.tsx
+│   │   │   ├── AppShell.tsx
+│   │   │   ├── SidePanel.tsx
+│   │   │   └── TopBar.tsx
+│   │   ├── player/
+│   │   │   ├── AlbumArt.css
+│   │   │   ├── AlbumArt.tsx
+│   │   │   ├── LocalFileLoader.tsx
+│   │   │   ├── MediaKeyBridge.tsx
+│   │   │   ├── PlaybackButtons.tsx
+│   │   │   ├── PlayerCard.css
+│   │   │   ├── PlayerCard.tsx
+│   │   │   ├── Timeline.tsx
+│   │   │   ├── TrackInfo.css
+│   │   │   ├── TrackInfo.tsx
+│   │   │   ├── TransportBar.tsx
+│   │   │   ├── UrlLoader.tsx
+│   │   │   └── VolumeSlider.tsx
+│   │   ├── settings/
+│   │   │   ├── AudioDevicePicker.tsx
+│   │   │   ├── EqPanel.tsx
+│   │   │   ├── SettingsPanel.tsx
+│   │   │   └── VisualizerControls.tsx
+│   │   ├── shortcuts/
+│   │   │   └── GlobalHotkeys.tsx
+│   │   ├── streaming/
+│   │   │   └── StreamTestWizard.tsx
+│   │   └── visualizer/
+│   │       ├── DimmerToggle.tsx
+│   │       ├── HdrToggle.tsx
+│   │       ├── index.ts
+│   │       ├── ParticlesCanvas.tsx
+│   │       ├── PresetSelector.tsx
+│   │       ├── SceneCanvas.tsx
+│   │       └── WebGLCanvas.tsx
+│   ├── lib/
+│   │   ├── audio/
+│   │   │   ├── AnalyserBus.ts
+│   │   │   ├── AudioEngine.ts
+│   │   │   ├── DeviceManager.ts
+│   │   │   ├── EQGraph.ts
+│   │   │   ├── eqPresets.json
+│   │   │   ├── Limiter.ts
+│   │   │   ├── OutputDeviceManager.ts
+│   │   │   ├── PlaybackController.ts
+│   │   │   └── TrackLoader.ts
+│   │   ├── diagnostics/
+│   │   │   ├── AdaptiveGuard.ts
+│   │   │   ├── FpsGuard.ts
+│   │   │   ├── PerfEvents.ts
+│   │   │   ├── PerfOverlay.ts
+│   │   │   └── Probe.ts
+│   │   ├── state/
+│   │   │   ├── types.ts
+│   │   │   ├── usePlayerStore.ts
+│   │   │   ├── useSettingsStore.ts
+│   │   │   ├── useUIStore.ts
+│   │   │   └── useVizStore.ts
+│   │   ├── streaming/
+│   │   │   └── HlsController.ts
+│   │   ├── three/
+│   │   │   ├── components/
+│   │   │   │   ├── ParticlesField.ts
+│   │   │   │   └── PostProcessing.ts
+│   │   │   ├── shaders/
+│   │   │   │   ├── particles.frag
+│   │   │   │   └── particles.vert
+│   │   │   ├── ContextLossHandler.ts
+│   │   │   ├── SceneController.ts
+│   │   │   ├── VisualizerParams.ts
+│   │   │   └── VisualizerScene.ts
+│   │   ├── utils/
+│   │   │   ├── ContrastCheck.ts
+│   │   │   ├── FocusRing.ts
+│   │   │   ├── FpsGuard.ts
+│   │   │   ├── Hotkeys.ts
+│   │   │   ├── IconRegistry.ts
+│   │   │   ├── MediaSession.ts
+│   │   │   ├── ReducedMotion.ts
+│   │   │   ├── UrlGuard.ts
+│   │   │   ├── useHotkeys.ts
+│   │   │   └── Visibility.ts
+│   │   └── visualizer/
+│   │       ├── QualityPresets.ts
+│   │       └── SceneController.ts
+│   ├── styles/
+│   │   ├── globals.css
+│   │   └── tokens.css
+│   ├── App.css
+│   ├── index.css
+│   ├── index.tsx
+│   └── vite-env.d.ts
+├── .gitignore
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── project-structure.txt
+├── README.md
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts

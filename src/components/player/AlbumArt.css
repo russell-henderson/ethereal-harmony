@@ -1,0 +1,18 @@
+.eh-album-art {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.eh-album-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.eh-album-art__placeholder {
+  color: var(--eh-text-muted);
+  font-size: 24px;
+  line-height: 1;
+}

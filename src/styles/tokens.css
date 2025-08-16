@@ -1,0 +1,212 @@
+/* ==========================================================================
+   Ethereal Harmony — Design Tokens
+   - Color system, glass tokens, typography, spacing, radii, shadows
+   - Motion and easing scales
+   - Component dimensions, z-index layers, breakpoints
+   - Theme overrides (dark default, optional light)
+   - Back-compat aliases for older token names
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   DARK THEME (DEFAULT)
+   Attach .theme-dark to :root or body for explicit forcing. Without a class,
+   this block is the baseline and matches the project's primary aesthetic.
+   -------------------------------------------------------------------------- */
+:root,
+:root.theme-dark {
+  /* ===== Brand / Core Colors ===== */
+  --eh-bg: #1A2B45;             /* Deep Indigo (Primary Background) */
+  --eh-accent: #7F6A9F;         /* Soft Lavender (Primary Accent) */
+  --eh-highlight: #00F0FF;      /* Radiant Aqua (Focus/Interactive) */
+
+  /* ===== Surface / Text (AA Contrast on Deep Indigo) ===== */
+  --eh-surface: rgba(255, 255, 255, 0.06);
+  --eh-surface-strong: rgba(26, 43, 69, 0.30);   /* Used to stabilize contrast over visuals */
+  --eh-text: #EAF1FF;
+  --eh-text-muted: #C8D3EA;
+  --eh-text-subtle: #A6B6D6;
+
+  /* ===== Semantic (reserved for toasts, statuses, subtle UI cues) ===== */
+  --eh-success: #37d39b;
+  --eh-warning: #ffcc66;
+  --eh-danger:  #ff6b6b;
+
+  /* ===== Glassmorphism Tokens ===== */
+  --eh-glass-bg: rgba(255, 255, 255, 0.12);
+  --eh-glass-bg-strong: rgba(26, 43, 69, 0.30); /* Overlay for AA text when backdrop is bright */
+  --eh-glass-border-color: rgba(255, 255, 255, 0.25);
+  --eh-glass-border: 1px solid var(--eh-glass-border-color);
+  --eh-glass-blur: 16px;
+  --eh-glass-radius: 16px;
+
+  /* ===== Shadows (kept modest for performance / avoid deep stacking) ===== */
+  --eh-shadow-1: 0 8px 24px rgba(0, 0, 0, 0.28);
+  --eh-shadow-2: 0 12px 32px rgba(0, 0, 0, 0.32);
+  --eh-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.20);
+
+  /* ===== Typography ===== */
+  --eh-font-title: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --eh-font-body: "Lato", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+
+  /* Scale (root = 16px in globals.css) */
+  --eh-fs-xxl: 28px;
+  --eh-fs-xl: 22px;
+  --eh-fs-lg: 18px;
+  --eh-fs-md: 16px;
+  --eh-fs-sm: 14px;
+  --eh-fs-xs: 12px;
+
+  /* ===== Spacing / Layout ===== */
+  --eh-gap-2xs: 2px;
+  --eh-gap-xs: 4px;
+  --eh-gap-sm: 6px;
+  --eh-gap-md: 12px;
+  --eh-gap-lg: 16px;
+  --eh-gap-xl: 24px;
+  --eh-gap-2xl: 32px;
+
+  /* Container */
+  --eh-container-max: 1280px;
+  --eh-container-pad: 16px;
+
+  /* ===== Radii ===== */
+  --eh-radius-sm: 10px;          /* Icon buttons, small chips */
+  --eh-radius-md: 12px;          /* Buttons, inputs */
+  --eh-radius-lg: 16px;          /* Glass surfaces (cards, panels) */
+
+  /* Component-specific radii (aliases of the above) */
+  --eh-button-radius: var(--eh-radius-md);
+  --eh-chip-radius: var(--eh-radius-md);
+
+  /* ===== Controls ===== */
+  --eh-range-track: rgba(255, 255, 255, 0.15);
+  --eh-range-thumb: var(--eh-highlight);
+
+  /* ===== Focus / A11y ===== */
+  --eh-focus-outer: 2px solid var(--eh-highlight);
+  --eh-focus-offset: 2px;
+  --eh-focus-glow: 0 0 0 3px rgba(0, 240, 255, 0.25);
+
+  /* ===== Motion & Easing =====
+     Keep transitions subtle. Heavy/long transitions can increase jank on
+     lower-end GPUs especially over a live WebGL backdrop. */
+  --eh-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --eh-ease-in: cubic-bezier(0.32, 0, 0.67, 0);
+  --eh-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --eh-duration-1: 120ms;  /* buttons, chips, toggles */
+  --eh-duration-2: 180ms;  /* panels, dropdowns */
+  --eh-duration-3: 240ms;  /* modals/overlays */
+
+  /* ===== Z-Index Layers (tight range for compositor stability) ===== */
+  --eh-z-base: 0;
+  --eh-z-canvas: 0;         /* WebGL canvas layer (behind) */
+  --eh-z-content: 1;        /* App content above canvas */
+  --eh-z-overlay: 30;
+  --eh-z-toast: 40;
+  --eh-z-modal: 50;
+  --eh-z-tooltip: 60;
+
+  /* ===== UI Chrome dimensions ===== */
+  --eh-sidepanel-w: 280px;
+  --eh-topbar-h: 64px;
+
+  /* ===== Breakpoints ===== */
+  --eh-bp-sm: 480px;
+  --eh-bp-md: 768px;
+  --eh-bp-lg: 1024px;
+  --eh-bp-xl: 1280px;
+
+  /* ===== Brand gradient (used on accents or brand marks) ===== */
+  --eh-gradient-brand: linear-gradient(90deg, #1A2B45 0%, #7F6A9F 100%);
+}
+
+/* --------------------------------------------------------------------------
+   LIGHT THEME
+   Our primary is dark; light is optional and kept consistent with tokens.
+   -------------------------------------------------------------------------- */
+:root.theme-light {
+  --eh-bg: #f6f7fb;
+  --eh-surface: rgba(26, 43, 69, 0.04);
+  --eh-surface-strong: rgba(26, 43, 69, 0.16);
+
+  --eh-text: #0c1630;
+  --eh-text-muted: #364564;
+  --eh-text-subtle: #4d5c7a;
+
+  /* Maintain brand colors */
+  --eh-accent: #7F6A9F;
+  --eh-highlight: #00F0FF;
+
+  /* Glass tuned for light surfaces */
+  --eh-glass-bg: rgba(26, 43, 69, 0.08);
+  --eh-glass-bg-strong: rgba(26, 43, 69, 0.16);
+  --eh-glass-border-color: rgba(26, 43, 69, 0.18);
+  --eh-glass-border: 1px solid var(--eh-glass-border-color);
+}
+
+/* --------------------------------------------------------------------------
+   OS THEME BASELINE (optional)
+   If no .theme-* class is present, allow the OS preference to inform tokens.
+   The app store may still set explicit theme via class for persistence.
+   -------------------------------------------------------------------------- */
+@media (prefers-color-scheme: light) {
+  :root:not(.theme-dark):not(.theme-light) {
+    --eh-bg: #f6f7fb;
+    --eh-surface: rgba(26, 43, 69, 0.04);
+    --eh-surface-strong: rgba(26, 43, 69, 0.16);
+
+    --eh-text: #0c1630;
+    --eh-text-muted: #364564;
+    --eh-text-subtle: #4d5c7a;
+
+    --eh-glass-bg: rgba(26, 43, 69, 0.08);
+    --eh-glass-bg-strong: rgba(26, 43, 69, 0.16);
+    --eh-glass-border-color: rgba(26, 43, 69, 0.18);
+    --eh-glass-border: 1px solid var(--eh-glass-border-color);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   REUSABLE GLASS SURFACE UTILITY
+   (Kept here for legacy imports; identical to globals.css usage)
+   -------------------------------------------------------------------------- */
+.eh-glass {
+  background: var(--eh-glass-bg);
+  backdrop-filter: blur(var(--eh-glass-blur)) saturate(120%);
+  -webkit-backdrop-filter: blur(var(--eh-glass-blur)) saturate(120%);
+  border: var(--eh-glass-border);
+  border-radius: var(--eh-glass-radius);
+  box-shadow: var(--eh-shadow-1), var(--eh-shadow-inset);
+}
+
+/* Stronger variant to guarantee AA text over bright scenes */
+.eh-glass--strong {
+  background:
+    linear-gradient(0deg, var(--eh-glass-bg-strong), var(--eh-glass-bg-strong)),
+    var(--eh-glass-bg);
+  backdrop-filter: blur(var(--eh-glass-blur)) saturate(120%);
+  -webkit-backdrop-filter: blur(var(--eh-glass-blur)) saturate(120%);
+  border: var(--eh-glass-border);
+  border-radius: var(--eh-glass-radius);
+  box-shadow: var(--eh-shadow-1), var(--eh-shadow-inset);
+}
+
+/* --------------------------------------------------------------------------
+   BACKWARD-COMPATIBILITY ALIASES
+   Ensure older imports/styles don’t break as we refined token names.
+   -------------------------------------------------------------------------- */
+:root {
+  /* Older names from early drafts */
+  --eh-text-dim: var(--eh-text-muted);
+
+  /* Some files referenced --eh-radius; standard is --eh-glass-radius */
+  --eh-radius: var(--eh-glass-radius);
+
+  /* Early border token without color indirection */
+  --eh-glass-border-legacy: var(--eh-glass-border);
+
+  /* Maintain existing dimensions from earlier iterations */
+  --eh-sidepanel-w-legacy: var(--eh-sidepanel-w);
+  --eh-topbar-h-legacy: var(--eh-topbar-h);
+}

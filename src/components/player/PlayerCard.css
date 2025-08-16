@@ -1,0 +1,16 @@
+/* Glass player card container */
+.eh-player-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: var(--eh-glass-radius);
+  background: var(--eh-glass-bg);
+  border: var(--eh-glass-border);
+  backdrop-filter: blur(var(--eh-glass-blur));
+}
+
+.eh-player-empty {
+  color: var(--eh-text-muted);
+  font-style: italic;
+}
