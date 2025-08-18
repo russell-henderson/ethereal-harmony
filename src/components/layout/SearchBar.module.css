@@ -1,0 +1,169 @@
+/* Ethereal Harmony — SearchBar
+   Glassmorphism + responsive behaviors
+   Tokens expected (from :root or tokens.css):
+   --eh-bg, --eh-accent, --eh-highlight, --eh-radius, --eh-blur
+*/
+
+.searchShell {
+  --h: 40px;
+  --padX: 12px;
+  display: inline-flex;
+  align-items: center;
+  height: var(--h);
+  border-radius: var(--eh-radius, 16px);
+  backdrop-filter: blur(var(--eh-blur, 16px));
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  transition: width 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  position: relative;
+  width: 240px; /* default compact; overridden by .expanded */
+}
+
+.compact {
+  width: 240px;
+}
+
+.expanded {
+  width: 400px; /* expands on focus or when typing */
+}
+
+.leadingIcon {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  margin-left: 6px;
+  opacity: 0.9;
+}
+
+.input {
+  flex: 1 1 auto;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #fff;
+  font-family: Lato, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  font-size: 14px;
+  padding: 0 var(--padX);
+  min-width: 0;
+}
+
+.input::placeholder {
+  color: rgba(255,255,255,0.72);
+}
+
+.trailing {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 8px;
+}
+
+.clearBtn,
+.submitBtn,
+.trailingBtn,
+.iconBtn,
+.closeBtn {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(var(--eh-blur, 16px));
+  border-radius: 12px;
+  cursor: pointer;
+  color: #fff;
+}
+
+.clearBtn[disabled] {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.kbd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.08);
+  opacity: 0.9;
+}
+
+/* Small-screen icon entry */
+.iconBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 16px;
+  padding: 0;
+}
+
+/* Modal styles */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 70;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(680px, calc(100vw - 24px));
+  height: auto;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(26, 43, 69, 0.72);
+  backdrop-filter: blur(16px);
+  border-radius: 16px;
+  padding: 16px 16px 12px;
+  z-index: 80;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: 36px 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  height: 48px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(16px);
+  padding: 0 8px;
+}
+
+.helpRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  color: rgba(255,255,255,0.8);
+  font-size: 13px;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .searchShell {
+    transition: none;
+  }
+}
+
+/* Ensure width never breaks TopBar layout */
+@media (max-width: 1200px) {
+  .expanded { width: 440px; }
+}
+@media (max-width: 1024px) {
+  .expanded { width: 380px; }
+}
+@media (max-width: 900px) {
+  .expanded { width: 340px; }
+}

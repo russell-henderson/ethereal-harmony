@@ -2,13 +2,14 @@
 /**
  * VolumeSlider
  * -----------------------------------------------------------------------------
- * Phase 2 volume control.
- * - Uses primitive store selectors to minimize re-renders.
- * - Accepts either `muted/toggleMute/setMuted` or just `volume/setVolume`.
- * - Normalizes value to [0, 1], shows a live percent readout for a11y.
+ * Compact volume control (icon + horizontal slider).
+ * - Width capped via CSS var (--eh-vol-max, default 180px).
+ * - Debounces setVolume to protect main thread during drags.
+ * - Supports either mute API (toggleMute/setMuted) or pure volume.
+ * - A11y: SR label, live pct readout, correct ARIA values.
  */
 
-import React, { useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { usePlayerStore } from "@/lib/state/usePlayerStore";
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
@@ -30,29 +31,35 @@ const VolumeSlider: React.FC = () => {
   const toggleMute = usePlayerStore((s: any) => s.toggleMute as (() => void) | undefined);
   const setMuted = usePlayerStore((s: any) => s.setMuted as ((v: boolean) => void) | undefined);
 
-  // --- Local helpers ---------------------------------------------------------
+  // --- Locals ----------------------------------------------------------------
   const lastNonZeroRef = useRef(0.8); // fallback when unmuting without store support
   const safeVol = clamp01(Number.isFinite(volume) ? volume : 1);
   const effectiveVol = muted ? 0 : safeVol;
   const icon = useVolumeIcon(effectiveVol, muted);
-
-  // Precompute percentage text for screen readers
   const pctText = useMemo(() => `${Math.round(effectiveVol * 100)}%`, [effectiveVol]);
+
+  // Debounce to avoid spamming the audio engine during drags
+  const debRef = useRef<number | null>(null);
+  const emitVolume = (v: number) => {
+    if (!setVolume) return;
+    if (debRef.current) window.clearTimeout(debRef.current);
+    debRef.current = window.setTimeout(() => setVolume(v), 80) as unknown as number;
+  };
+  useEffect(() => () => debRef.current && window.clearTimeout(debRef.current), []);
 
   // --- Handlers --------------------------------------------------------------
   const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     const next = clamp01(parseFloat(e.currentTarget.value));
-    // If the store exposes mute controls, unmute on user interaction
+    // If the store supports mute, unmute on user interaction
     if (muted && (setMuted || toggleMute)) {
       if (setMuted) setMuted(false);
       else toggleMute?.();
     }
     if (next > 0) lastNonZeroRef.current = next;
-    setVolume?.(next);
+    emitVolume(next);
   };
 
   const onToggleMute = () => {
-    // Prefer store mute API if available
     if (toggleMute) {
       toggleMute();
       return;
@@ -61,7 +68,7 @@ const VolumeSlider: React.FC = () => {
       setMuted(!muted);
       return;
     }
-    // Fallback: emulate mute by setting volume to 0 / restoring last value
+    // Fallback: emulate mute via volume
     if (effectiveVol === 0) {
       setVolume?.(lastNonZeroRef.current);
     } else {
@@ -70,8 +77,26 @@ const VolumeSlider: React.FC = () => {
     }
   };
 
+  const onKeyAdjust: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
+    const step = e.shiftKey ? 0.1 : 0.02;
+    if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+      emitVolume(clamp01(effectiveVol - step));
+      e.preventDefault();
+    } else if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+      emitVolume(clamp01(effectiveVol + step));
+      e.preventDefault();
+    }
+  };
+
   return (
-    <div className="eh-hstack items-center" style={{ gap: 8 }} role="group" aria-label="Volume">
+    <div
+      className="eh-volume-shell eh-hstack items-center"
+      role="group"
+      aria-label="Volume"
+      // Layout width should be controlled via CSS var; default to 180px.
+      // In tokens or a component stylesheet: .eh-volume-shell { max-inline-size: var(--eh-vol-max, 180px); }
+      style={{ gap: 8 }}
+    >
       {/* Mute toggle (button) */}
       <button
         type="button"
@@ -84,7 +109,7 @@ const VolumeSlider: React.FC = () => {
         <span aria-hidden="true">{icon}</span>
       </button>
 
-      {/* Slider */}
+      {/* Slider (compact) */}
       <label className="sr-only" htmlFor="eh-volume">
         Volume
       </label>
@@ -96,25 +121,20 @@ const VolumeSlider: React.FC = () => {
         step={0.01}
         value={effectiveVol}
         onChange={onChange}
+        onKeyDown={onKeyAdjust}
         aria-valuemin={0}
         aria-valuemax={1}
         aria-valuenow={Number.isFinite(effectiveVol) ? Number(effectiveVol.toFixed(2)) : 0}
         aria-valuetext={pctText}
         aria-label="Volume control"
         className="eh-volume-slider"
-        style={{
-          accentColor: "var(--eh-highlight, #00F0FF)",
-          width: 120,
-          cursor: "pointer",
-        }}
       />
 
-      {/* Percent readout for quick visual confirmation */}
+      {/* Percent readout (optional) */}
       <output
         htmlFor="eh-volume"
-        className="tabular-nums"
+        className="tabular-nums eh-volume-pct"
         aria-live="polite"
-        style={{ minWidth: 36, textAlign: "right" }}
       >
         {pctText}
       </output>

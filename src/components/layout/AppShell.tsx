@@ -84,8 +84,8 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "var(--eh-sidepanel-w) 1fr",
     minHeight: "calc(100vh - var(--eh-topbar-h))",
-    gap: "var(--eh-gap-lg)",
-    padding: "var(--eh-gap-lg)",
+    gap: "var(--eh-component-gap)",
+    padding: "var(--eh-component-gap)",
   } as React.CSSProperties,
 
   aside: {
@@ -96,7 +96,7 @@ const styles = {
     position: "relative" as const,
     display: "grid",
     gridTemplateRows: "auto 1fr", // controls rail + main content
-    gap: "var(--eh-gap-lg)",
+    gap: "var(--eh-controls-gap)",
     outline: "none",
   } as React.CSSProperties,
 
@@ -104,6 +104,7 @@ const styles = {
   controls: {
     // .eh-glass + .eh-controls-grid in CSS; we replicate minimal spacing here
     padding: "var(--eh-gap-md)",
+    marginBottom: "var(--eh-controls-gap)",
   },
 };
 

@@ -132,8 +132,10 @@
   --eh-z-tooltip: 60;
 
   /* ===== 1.13 DIMENSIONS ===== */
-  --eh-sidepanel-w: 280px;
+  --eh-sidepanel-w: 260px;
   --eh-topbar-h:    64px;
+  --eh-component-gap: 24px;
+  --eh-controls-gap: 16px;
 
   /* ===== 1.14 BREAKPOINTS ===== */
   --eh-bp-sm:  480px;

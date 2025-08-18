@@ -1,110 +1,163 @@
-// src/components/layout/TopBar.tsx
-import React, { useEffect, useRef, useState } from "react";
-import { Icon } from "@/lib/utils/IconRegistry";
-import { motion } from "framer-motion";
-
-type TopBarProps = {
-  onSearchChange?: (q: string) => void;
-  onOpenSettings?: () => void;
-};
-
-const DEBOUNCE_MS = 250;
-
 /**
- * TopBar
- * - Left: brand icon + title + neutral silhouette
- * - Center: debounced search
- * - Right: settings button
- * A11y: labels, focus order, keyboard shortcut for search (/)
+ * TopBar.tsx
+ * Global header: brand slot (logomark + neutral silhouette), Search (center),
+ * and Settings (right). Contains the single global toggle for the SidePanel.
  */
-const TopBar: React.FC<TopBarProps> = ({ onSearchChange, onOpenSettings }) => {
-  const [query, setQuery] = useState("");
-  const debounceRef = useRef<number | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Debounce external search updates
-  useEffect(() => {
-    if (debounceRef.current) window.clearTimeout(debounceRef.current);
-    debounceRef.current = window.setTimeout(() => {
-      onSearchChange?.(query.trim());
-    }, DEBOUNCE_MS);
-    return () => {
-      if (debounceRef.current) window.clearTimeout(debounceRef.current);
-    };
-  }, [query, onSearchChange]);
+import React, { useState } from "react";
+import { useUIStore } from "@/lib/state/useUIStore";
+import Icon from "@/lib/utils/IconRegistry";
+import SearchBar from "@/components/layout/SearchBar";
 
-  // Press "/" to focus search unless typing in an input already
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "/") return;
-      const target = e.target as HTMLElement | null;
-      const tag = target?.tagName?.toLowerCase();
-      if (tag === "input" || tag === "textarea" || (target as any)?.isContentEditable) return;
-      e.preventDefault();
-      inputRef.current?.focus();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
+export const TopBar: React.FC = () => {
+  const isOpen = useUIStore((s) => s.sidePanelOpen);
+  const toggleSidePanel = useUIStore((s) => s.toggleSidePanel);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const handleOpenSettings = () => {
-    onOpenSettings?.();
+  // Optional: wire to library filtering when that store lands.
+  const handleSearch = (q: string) => {
+    // TODO: integrate with library filter action (e.g., useLibraryStore.getState().setQuery(q))
+    // For now, this is a no-op to keep TopBar decoupled.
   };
 
-  return (
-    <header
-      className="topbar eh-glass glass-surface"
-      role="banner"
-      aria-label="Application top bar"
-    >
-      {/* Left: brand + silhouette */}
-      <div className="topbar__left" aria-label="Brand">
-        <span className="brandmark" aria-hidden>
-          <Icon name="app" width={18} height={18} />
-        </span>
-        <h1 className="topbar__title">Ethereal Harmony</h1>
-        {/* Neutral silhouette: always shown per blueprint */}
-        <div
-          className="topbar__silhouette"
-          role="img"
-          aria-label="Profile placeholder"
-          title="Coming soon"
-        />
-      </div>
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
 
-      {/* Center: search */}
-      <div className="topbar__center">
-        <label htmlFor="eh-search" className="sr-only">
-          Search library
-        </label>
-        <input
-          ref={inputRef}
-          id="eh-search"
-          className="topbar__search input-glass"
-          type="search"
-          inputMode="search"
-          placeholder="Search…"
-          aria-placeholder="Search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        {/* Optional inline icon for visual affordance; purely decorative */}
-        <span className="topbar__searchIcon" aria-hidden>
-          <Icon name="search" width={16} height={16} />
-        </span>
-      </div>
-
-      {/* Right: settings */}
-      <div className="topbar__right">
-        <motion.button
+  if (isCollapsed) {
+    return (
+      <div className="topbar-collapsed">
+        <button
           type="button"
-          className="glass-btn"
-          aria-label="Open settings"
-          onClick={handleOpenSettings}
-          whileTap={{ scale: 0.96 }}
+          className="collapse-toggle"
+          onClick={toggleCollapse}
+          aria-label="Expand topbar"
+          style={{
+            background: "rgba(255, 255, 255, 0.06)",
+            border: "1px solid rgba(255, 255, 255, 0.25)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+            backdropFilter: "blur(12px)",
+            opacity: 0.75
+          }}
         >
-          <Icon name="settings" width={18} height={18} />
-        </motion.button>
+          <Icon name="chevronDown" aria-hidden="true" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <header className="topbar eh-glass glass-surface" role="banner">
+      {/* Left cluster: global SidePanel toggle + LED indicator */}
+      <div className="topbar__left">
+        <button
+          type="button"
+          className="icon-btn"
+          aria-label="Toggle navigation"
+          aria-expanded={isOpen ? "true" : "false"}
+          aria-controls="eh-sidepanel"
+          onClick={toggleSidePanel}
+          style={{
+            background: "rgba(255, 255, 255, 0.06)",
+            border: "1px solid rgba(255, 255, 255, 0.25)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+            backdropFilter: "blur(12px)",
+            opacity: 0.75
+          }}
+        >
+          <Icon name="menu" aria-hidden="true" />
+        </button>
+        
+        {/* LED Light Indicator */}
+        <div className="led-indicator" style={{
+          width: "12px",
+          height: "12px",
+          borderRadius: "50%",
+          background: "var(--eh-aqua)",
+          boxShadow: "0 0 10px var(--eh-aqua), 0 0 20px rgba(0,240,255,.6)",
+          marginLeft: "8px",
+          animation: "pulse 2s ease-in-out infinite alternate"
+        }} />
+        
+        {/* Application Title */}
+        <div className="topbar__title">
+          <h1 style={{
+            fontSize: "18px",
+            fontWeight: 700,
+            color: "var(--eh-text)",
+            margin: 0,
+            letterSpacing: "0.5px"
+          }}>
+            ETHEREAL PLAYER
+          </h1>
+        </div>
+        
+        {/* Menu Items */}
+        <div className="topbar__menu">
+          <span className="menu-item">File</span>
+          <span className="menu-item">Edit</span>
+          <span className="menu-item">View</span>
+          <span className="menu-item">Analyze</span>
+          <span className="menu-item">Tools</span>
+          <span className="menu-item">Help</span>
+        </div>
+      </div>
+
+      {/* Center cluster: Empty space for balance */}
+      <div className="topbar__center" />
+
+      {/* Right cluster: Search + User Avatar + Settings + Collapse Button */}
+      <div className="topbar__right">
+        {/* Search moved to right side */}
+        <div className="topbar__search" role="search" aria-label="Library search">
+          <SearchBar onSearch={handleSearch} />
+        </div>
+        
+        {/* User Avatar - Enhanced glassmorphism */}
+        <div className="topbar__user" aria-hidden="true">
+          <div className="user-avatar" style={{
+            background: "rgba(255, 255, 255, 0.06)",
+            border: "1px solid rgba(255, 255, 255, 0.25)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+            backdropFilter: "blur(12px)",
+            opacity: 0.75
+          }}>
+            <Icon name="user" size={20} aria-hidden="true" />
+          </div>
+        </div>
+        
+        {/* Settings Icon - Enhanced glassmorphism */}
+        <button
+          type="button"
+          className="icon-btn topbar__settings"
+          aria-label="Settings"
+          style={{
+            background: "rgba(255, 255, 255, 0.06)",
+            border: "1px solid rgba(255, 255, 255, 0.25)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+            backdropFilter: "blur(12px)",
+            opacity: 0.75
+          }}
+        >
+          <Icon name="settings" aria-hidden="true" />
+        </button>
+
+        {/* Collapse Button */}
+        <button
+          type="button"
+          className="icon-btn collapse-toggle"
+          onClick={toggleCollapse}
+          aria-label="Collapse topbar"
+          style={{
+            background: "rgba(255, 255, 255, 0.06)",
+            border: "1px solid rgba(255, 255, 255, 0.25)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+            backdropFilter: "blur(12px)",
+            opacity: 0.75
+          }}
+        >
+          <Icon name="chevronUp" aria-hidden="true" />
+        </button>
       </div>
     </header>
   );

@@ -52,11 +52,44 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ mode = "compact", showAdv
       {/* --------------------------------------------------------------------
           Toolbar row: Preset / HDR / Dimmer
          ------------------------------------------------------------------ */}
-      <div className="eh-hstack" role="group" aria-label="Visualizer quick controls" style={{ gap: 12 }}>
-        <PresetSelector />
-        <HdrToggle />
-        <DimmerToggle />
-      </div>
+      <div className="eh-hstack" style={{ 
+          gap: 16, 
+          justifyContent: "space-between", 
+          padding: "var(--eh-gap-md)",
+          background: "rgba(255, 255, 255, 0.05)",
+          borderRadius: "var(--eh-glass-radius)",
+          border: "1px solid rgba(255, 255, 255, 0.1)"
+        }}>
+          <span className="eh-title" style={{ fontSize: "14px", fontWeight: 600 }}>
+            Visualizer quick controls
+          </span>
+          <div className="eh-hstack" style={{ gap: 12 }}>
+            <button 
+              className="eh-btn eh-btn--hdr"
+              style={{
+                background: "rgba(255, 255, 255, 0.06)",
+                border: "1px solid rgba(255, 255, 255, 0.25)",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+                backdropFilter: "blur(12px)",
+                opacity: 0.75
+              }}
+            >
+              HDR Off
+            </button>
+            <button 
+              className="eh-btn eh-btn--dimmer"
+              style={{
+                background: "rgba(255, 255, 255, 0.06)",
+                border: "1px solid rgba(255, 255, 255, 0.25)",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+                backdropFilter: "blur(12px)",
+                opacity: 0.75
+              }}
+            >
+              Dimmer Off
+            </button>
+          </div>
+        </div>
 
       {/* --------------------------------------------------------------------
           Advanced panels (optional): EQ and Output Device

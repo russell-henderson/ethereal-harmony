@@ -1,195 +1,162 @@
-// src/components/layout/SidePanel.tsx
-import React, { useMemo } from "react";
-import { motion } from "framer-motion";
-import { getIcon, type IconKey } from "@/lib/utils/IconRegistry";
-// Store-driven routing per blueprint (V1: no React Router)
-import { useUIStore } from "@/lib/state/useUIStore";
-
 /**
- * SidePanel
- * -----------------------------------------------------------------------------
- * Primary navigation rail (Library, Playlists, Discovery).
- * - Store-driven routing (no full router in V1).
- * - Glassmorphism styling via `eh-glass` token class.
- * - WCAG AA: high-contrast focus ring, clear aria-current, keyboard friendly.
- * - Motion: subtle press/hover scaled interactions, reduced when user prefers.
+ * SidePanel.tsx
+ * Primary navigation drawer (Library, Playlists, Discovery).
+ * - Opens/closes via global toggle (TopBar) and a local header chevron.
+ * - Auto-opens on desktop (≥1024px) on first mount so it's “out” by default.
+ * - Includes compact SearchBar in header.
+ *
+ * A11y:
+ * - <aside> with aria-label for landmark nav.
+ * - aria-expanded/aria-controls on the toggle.
+ * - aria-hidden mirrors visibility for SRs.
  */
 
-type NavKey = "library" | "playlists" | "discovery";
+import React, { useState } from "react";
+import { useUIStore } from "@/lib/state/useUIStore";
+import { Icon } from "@/lib/utils/IconRegistry";
+import SearchBar from "@/components/layout/SearchBar";
 
-type NavItem = {
-  key: NavKey;
-  label: string;
-  icon: IconKey;          // IconRegistry semantic id
-  ariaLabel?: string;
-};
+export const SidePanel: React.FC = () => {
+  const isOpen = useUIStore((s) => s.sidePanelOpen);
+  const toggleSidePanel = useUIStore((s) => s.toggleSidePanel);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
-const NAV_ITEMS: NavItem[] = [
-  { key: "library",   label: "Library",   icon: "nav.library",   ariaLabel: "Go to Library" },
-  { key: "playlists", label: "Playlists", icon: "nav.playlists", ariaLabel: "Go to Playlists" },
-  { key: "discovery", label: "Discovery", icon: "nav.discovery", ariaLabel: "Go to Discovery" },
-];
+  const handleToggle = () => {
+    toggleSidePanel();
+  };
 
-const SideLink: React.FC<{
-  item: NavItem;
-  active: boolean;
-  onSelect: (key: NavKey) => void;
-}> = ({ item, active, onSelect }) => {
-  const Icon = useMemo(() => getIcon(item.icon), [item.icon]);
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
 
-  return (
-    <motion.button
-      type="button"
-      className="eh-focus"
-      onClick={() => onSelect(item.key)}
-      aria-label={item.ariaLabel ?? item.label}
-      aria-current={active ? "page" : undefined}
-      // Button over anchor to avoid fake href; layout local, colors via CSS vars.
-      style={{
-        display: "grid",
-        gridTemplateColumns: "24px 1fr",
-        alignItems: "center",
-        gap: 10,
-        width: "100%",
-        textAlign: "left",
-        padding: "10px 12px",
-        borderRadius: 12,
-        border: active ? "1px solid rgba(255,255,255,0.25)" : "1px solid transparent",
-        background: active ? "rgba(255,255,255,0.12)" : "transparent",
-        color: "var(--eh-color-text, #FFFFFF)",
-        cursor: "pointer",
-      }}
-      whileHover={{ scale: 0.995 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 300, damping: 26, mass: 0.9 }}
-    >
-      <span
-        aria-hidden
-        style={{
-          display: "inline-flex",
-          width: 24,
-          height: 24,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Icon width={20} height={20} color="currentColor" aria-hidden="true" />
-      </span>
-      <span
-        style={{
-          fontFamily: 'Lato, ui-sans-serif, system-ui, "Segoe UI", Roboto',
-          fontSize: 14,
-          lineHeight: 1.25,
-          letterSpacing: 0.2,
-          userSelect: "none",
-        }}
-      >
-        {item.label}
-      </span>
-    </motion.button>
-  );
-};
+  // Add the missing handleSearch function
+  const handleSearch = (q: string) => {
+    // TODO: integrate with library filter action when that store lands
+    console.log('Search query:', q);
+  };
 
-const SidePanel: React.FC = () => {
-  const view = useUIStore((s) => s.view as NavKey);
-  const setView = useUIStore((s) => s.setView);
+  // Ensure panel is "out" on desktop by default (first mount only).
+  React.useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    const state: any = useUIStore.getState();
+    // Only auto-open if currently closed and no explicit user action recorded.
+    // If a setter exists we use it; otherwise hard set.
+    if (mql.matches && state.sidePanelOpen === false) {
+      if (typeof state.setSidePanelOpen === "function") {
+        state.setSidePanelOpen(true);
+      } else {
+        useUIStore.setState({ sidePanelOpen: true });
+      }
+    }
+  }, []);
 
-  return (
-    <nav
-      aria-label="Primary"
-      aria-orientation="vertical"
-      className="eh-glass"
-      style={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-        padding: 12,
-        borderRadius: 16,
-      }}
-    >
-      {/* Panel header / brand silhouette (future profiles; neutral avatar now) */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          padding: "6px 8px 10px 8px",
-          borderBottom: "1px solid rgba(255,255,255,0.12)",
-          marginBottom: 8,
-        }}
-      >
-        <div
-          aria-hidden
+  // Close with Escape key for convenience; Ctrl/Cmd+B toggles
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const metaB = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b";
+      if (metaB) {
+        e.preventDefault();
+        handleToggle();
+      } else if (e.key === "Escape" && isOpen) {
+        e.preventDefault();
+        toggleSidePanel(); // Use existing toggleSidePanel instead of undefined setSidePanelOpen
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [handleToggle, isOpen, toggleSidePanel]); // Add toggleSidePanel to dependencies
+
+  const panelId = "eh-sidepanel";
+
+  if (isCollapsed) {
+    return (
+      <div className="sidepanel-collapsed">
+        <button
+          type="button"
+          className="collapse-toggle"
+          onClick={toggleCollapse}
+          aria-label="Expand sidepanel"
           style={{
-            width: 28,
-            height: 28,
-            borderRadius: "50%",
-            background: "linear-gradient(135deg, #1A2B45 0%, #7F6A9F 100%)",
-            boxShadow: "0 0 0 1px rgba(255,255,255,0.22) inset",
-            flex: "0 0 auto",
-          }}
-        />
-        <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-          <span
-            style={{
-              fontFamily: 'Montserrat, ui-sans-serif, system-ui, "Segoe UI", Roboto',
-              fontWeight: 700,
-              fontSize: 13,
-              color: "rgba(255,255,255,0.95)",
-            }}
-          >
-            Ethereal Harmony
-          </span>
-          <span
-            style={{
-              fontFamily: 'Lato, ui-sans-serif, system-ui, "Segoe UI", Roboto',
-              fontSize: 12,
-              color: "rgba(255,255,255,0.75)",
-            }}
-          >
-            v1 · Glass UI
-          </span>
-        </div>
-      </div>
-
-      <div role="list" aria-label="Primary sections" style={{ display: "grid", gap: 6 }}>
-        {NAV_ITEMS.map((item) => (
-          <div role="listitem" key={item.key}>
-            <SideLink item={item} active={view === item.key} onSelect={setView} />
-          </div>
-        ))}
-      </div>
-
-      {/* Optional footer actions (Phase 2+) */}
-      <div style={{ marginTop: "auto", paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.12)" }}>
-        <small
-          style={{
-            display: "block",
-            opacity: 0.9,
-            fontFamily: 'Lato, ui-sans-serif, system-ui, "Segoe UI", Roboto',
-            fontSize: 11,
-            color: "rgba(255,255,255,0.7)",
-            lineHeight: 1.3,
+            background: "rgba(255, 255, 255, 0.06)",
+            border: "1px solid rgba(255, 255, 255, 0.25)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+            backdropFilter: "blur(12px)",
+            opacity: 0.75
           }}
         >
-          Tip: Press <kbd style={kbdStyle}>T</kbd> to cycle themes,{" "}
-          <kbd style={kbdStyle}>P</kbd> for presets.
-        </small>
+          <Icon name="chevronRight" aria-hidden="true" />
+        </button>
       </div>
-    </nav>
-  );
-};
+    );
+  }
 
-const kbdStyle: React.CSSProperties = {
-  background: "rgba(255,255,255,0.12)",
-  border: "1px solid rgba(255,255,255,0.25)",
-  borderRadius: 6,
-  padding: "0 6px",
-  fontSize: 11,
-  fontFamily:
-    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace',
-  color: "rgba(255,255,255,0.95)",
+  return (
+    <aside
+      id={panelId}
+      className="sidepanel eh-glass glass-surface"
+      data-open={isOpen ? "true" : "false"}
+      data-state={isOpen ? "open" : "closed"}
+      aria-label="Primary navigation"
+      aria-hidden={!isOpen ? "true" : "false"}
+    >
+      {/* Header: just the Navigation label centered */}
+      <div className="sidepanel__header">
+        <div className="sidepanel__brand">
+          <span className="sidepanel__label">Navigation</span>
+        </div>
+        {/* Hide/return icons in the header field */}
+        <button
+          type="button"
+          className="icon-btn sidepanel__toggle"
+          aria-label="Hide sidepanel"
+          onClick={toggleCollapse}
+          style={{
+            background: "rgba(255, 255, 255, 0.06)",
+            border: "1px solid rgba(255, 255, 255, 0.25)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+            backdropFilter: "blur(12px)",
+            opacity: 0.75
+          }}
+        >
+          <Icon name="chevronLeft" aria-hidden="true" />
+        </button>
+      </div>
+
+      {/* Primary nav with integrated search */}
+      <nav className="sidepanel__nav">
+        <div className="sidepanel__search" role="search" aria-label="Library search">
+          <SearchBar onSearch={handleSearch} />
+        </div>
+        
+        <ul className="navlist" role="list">
+          <li>
+            <a className="navitem" href="#library">
+              <span className="navitem__icon" aria-hidden="true">
+                <Icon name="library" aria-hidden="true" />
+              </span>
+              <span className="navitem__label">Library</span>
+            </a>
+          </li>
+          <li>
+            <a className="navitem" href="#playlists">
+              <span className="navitem__icon" aria-hidden="true">
+                <Icon name="playlists" aria-hidden="true" />
+              </span>
+              <span className="navitem__label">Playlists</span>
+            </a>
+          </li>
+          <li>
+            <a className="navitem" href="#discovery">
+              <span className="navitem__icon" aria-hidden="true">
+                <Icon name="discovery" aria-hidden="true" />
+              </span>
+              <span className="navitem__label">Discovery</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+  );
 };
 
 export default SidePanel;

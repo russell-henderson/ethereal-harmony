@@ -55,6 +55,7 @@ const PlayerCard: React.FC = () => {
   const [volume, setVolume] = useState<number>(1);
   const [muted, setMuted] = useState<boolean>(false);
   const [track, setTrack] = useState<TrackMeta | null>(null);
+  const [playbackRate, setPlaybackRate] = useState<number>(1);
 
   // Scrub state (avoid fighting controller timeupdates while the user drags)
   const [isScrubbing, setIsScrubbing] = useState(false);
@@ -150,63 +151,308 @@ const PlayerCard: React.FC = () => {
     playbackController.setRate(r);
   };
 
+  // Handler: file upload
+  const handleFileUpload = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'audio/*';
+    input.multiple = false;
+    
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        try {
+          // Create a basic track object from the file
+          const newTrack = {
+            title: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension
+            artist: "Uploaded Track",
+            album: "Local Files",
+            artworkUrl: undefined
+          };
+          
+          // Set the track and load it into the player
+          setTrack(newTrack);
+          
+          // Load the audio file into the playback controller using the correct method
+          await playbackController.loadFromFile(file, true);
+          
+        } catch (error) {
+          console.error('Error loading audio file:', error);
+          alert('Error loading audio file. Please try again.');
+        }
+      }
+    };
+    
+    input.click();
+  };
+
   const progressText = useMemo(() => {
     return `${fmtTime(currentTime)} / ${fmtTime(duration || 0)}`;
   }, [currentTime, duration]);
 
   return (
-    <article className="eh-glass" aria-label="Audio player" style={{ padding: "16px" }}>
+    <article 
+      className="eh-glass" 
+      aria-label="Audio player" 
+      style={{ 
+        padding: "20px",
+        marginTop: "var(--eh-controls-gap)"
+      }}
+    >
       {/* Metadata row */}
       <div className="eh-hstack" style={{ justifyContent: "space-between", marginBottom: 8 }}>
         <div className="eh-hstack" style={{ gap: 12 }}>
-          {/* Artwork */}
+          {/* Artwork - 50% larger with enhanced glassmorphism */}
           <div
             aria-hidden="true"
             style={{
-              width: 56,
-              height: 56,
+              width: 84, // Increased from 56 (50% larger)
+              height: 84, // Increased from 56 (50% larger)
               borderRadius: 8,
               overflow: "hidden",
-              background: "rgba(255,255,255,0.1)",
-              border: "var(--eh-glass-border)",
+              background: "rgba(255, 255, 255, 0.06)",
+              border: "1px solid rgba(255, 255, 255, 0.25)",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+              backdropFilter: "blur(12px)",
+              opacity: 0.75
             }}
           >
             {track?.artworkUrl ? (
-              <img
-                src={track.artworkUrl}
-                alt=""
-                width={56}
-                height={56}
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-              />
-            ) : null}
+              <img src={track.artworkUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              <div style={{ 
+                width: "100%", 
+                height: "100%", 
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center",
+                color: "rgba(255,255,255,0.3)",
+                fontSize: "12px"
+              }}>
+                No Art
+              </div>
+            )}
           </div>
-
-          {/* Text */}
-          <div className="eh-vstack" style={{ gap: 2 }}>
-            <div className="eh-title" style={{ fontSize: "var(--eh-fs-md)" }}>
-              {track?.title ?? "No track loaded"}
+          
+          {/* Track info - positioned further right */}
+          <div className="eh-vstack" style={{ gap: 8, minWidth: 200 }}>
+            <div style={{ 
+              fontSize: "16px", 
+              fontWeight: 600, 
+              color: "var(--eh-text)",
+              textAlign: "left",
+              width: "100%"
+            }}>
+              {track?.title || "No track loaded"}
             </div>
-            <div style={{ fontSize: "var(--eh-fs-sm)", color: "var(--eh-text-muted)" }}>
-              {track?.artist ?? ""}
+            <div style={{ 
+              fontSize: "14px", 
+              color: "var(--eh-text-muted)",
+              textAlign: "left",
+              width: "100%"
+            }}>
+              {track?.artist || "Unknown Artist"}
             </div>
           </div>
         </div>
+        {/* Upload button - enhanced glassmorphism with subtle shadows */}
+        <button
+          type="button"
+          className="icon-btn"
+          aria-label="Upload audio file"
+          onClick={handleFileUpload}
+          style={{
+            background: "rgba(255, 255, 255, 0.06)",
+            border: "1px solid rgba(255, 255, 255, 0.25)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+            backdropFilter: "blur(12px)",
+            opacity: 0.75
+          }}
+        >
+          <Icon name="upload" aria-hidden="true" />
+        </button>
+      </div>
 
-        {/* Rate selector */}
-        <label className="eh-hstack" style={{ gap: 8 }}>
-          <span style={{ fontSize: "var(--eh-fs-sm)" }}>Speed</span>
+      {/* Progress bar */}
+      <div style={{ marginBottom: 16, position: "relative" }}>
+        <div style={{ 
+          height: 4, 
+          background: "rgba(255,255,255,0.1)", 
+          borderRadius: 2,
+          marginBottom: 8
+        }}>
+          <div style={{ 
+            width: `${((currentTime / duration) * 100) || 0}%`, 
+            height: "100%", 
+            background: "var(--eh-aqua)", 
+            borderRadius: 2 
+          }} />
+        </div>
+        <div style={{ 
+          fontSize: "12px", 
+          color: "var(--eh-text-muted)",
+          textAlign: "center"
+        }}>
+          {progressText}
+        </div>
+        {/* Hidden seek input for accessibility */}
+        <input
+          type="range"
+          min="0"
+          max={duration || 0}
+          value={currentTime}
+          onChange={onSeekInput}
+          onMouseUp={commitSeek}
+          onKeyUp={commitSeek}
+          style={{
+            width: "100%",
+            height: "4px",
+            background: "transparent",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            opacity: 0,
+            cursor: "pointer"
+          }}
+          aria-label="Seek through track"
+        />
+      </div>
+
+      {/* Player controls - enhanced glassmorphism with subtle shadows */}
+      <div className="eh-hstack" style={{ 
+        justifyContent: "center", 
+        gap: 16, 
+        marginBottom: 16 
+      }}>
+        <button
+          type="button"
+          className="icon-btn"
+          aria-label="Previous track"
+          onClick={onPrev}
+          style={{
+            width: "52px", // 30% larger from 40px
+            height: "52px", // 30% larger from 40px
+            background: "rgba(255, 255, 255, 0.06)",
+            border: "1px solid rgba(255, 255, 255, 0.25)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+            backdropFilter: "blur(12px)",
+            opacity: 0.75
+          }}
+        >
+          <Icon name="prev" aria-hidden="true" size={24} />
+        </button>
+        
+        <button
+          type="button"
+          className="icon-btn"
+          aria-label={isPlaying ? "Pause" : "Play"}
+          aria-pressed={isPlaying ? "true" : "false"}
+          onClick={onToggle}
+          style={{
+            width: "52px", // 30% larger from 40px
+            height: "52px", // 30% larger from 40px
+            background: "rgba(255, 255, 255, 0.06)",
+            border: "1px solid rgba(255, 255, 255, 0.25)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+            backdropFilter: "blur(12px)",
+            opacity: 0.75
+          }}
+        >
+          <Icon name={isPlaying ? "pause" : "play"} aria-hidden="true" size={24} />
+        </button>
+        
+        <button
+          type="button"
+          className="icon-btn"
+          aria-label="Next track"
+          onClick={onNext}
+          style={{
+            width: "52px", // 30% larger from 40px
+            height: "52px", // 30% larger from 40px
+            background: "rgba(255, 255, 255, 0.06)",
+            border: "1px solid rgba(255, 255, 255, 0.25)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+            backdropFilter: "blur(12px)",
+            opacity: 0.75
+          }}
+        >
+          <Icon name="next" aria-hidden="true" size={24} />
+        </button>
+      </div>
+
+      {/* Volume control - enhanced glassmorphism with subtle shadows */}
+      <div className="eh-hstack" style={{ 
+        gap: 12, 
+        alignItems: "center",
+        justifyContent: "space-between"
+      }}>
+        <div className="eh-hstack" style={{ gap: 8, alignItems: "center" }}>
+          <button
+            type="button"
+            className="icon-btn"
+            aria-label={muted ? "Unmute" : "Mute"}
+            aria-pressed={muted ? "true" : "false"}
+            onClick={onMute}
+            style={{
+              width: "37px", // 15% larger from 32px
+              height: "37px", // 15% larger from 32px
+              background: "rgba(255, 255, 255, 0.06)",
+              border: "1px solid rgba(255, 255, 255, 0.25)",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+              backdropFilter: "blur(12px)",
+              opacity: 0.75
+            }}
+          >
+            <Icon name={muted ? "mute" : "volume"} aria-hidden="true" size={20} />
+          </button>
+          
+          {/* Volume slider - extended to arrow tip position */}
+          <label className="eh-hstack" style={{ gap: 8, alignItems: "center" }}>
+            <span className="sr-only">Volume</span>
+            <div style={{ width: "200px" }}> {/* Extended from 120px to arrow tip position */}
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={volume}
+                onChange={(e) => setVolume(Number(e.target.value))}
+                aria-label="Volume"
+                style={{
+                  width: "100%",
+                  height: "4px",
+                  background: "rgba(255,255,255,0.1)",
+                  borderRadius: "2px",
+                  outline: "none",
+                  cursor: "pointer"
+                }}
+              />
+            </div>
+          </label>
+        </div>
+
+        {/* Speed control - moved to right side with enhanced glassmorphism */}
+        <div className="eh-hstack" style={{ gap: 8, alignItems: "center" }}>
+          <span style={{ 
+            fontSize: "12px", 
+            color: "var(--eh-text-muted)",
+            whiteSpace: "nowrap"
+          }}>
+            Speed:
+          </span>
           <select
-            aria-label="Playback speed"
             value={rate}
             onChange={onRate}
+            aria-label="Playback speed"
             style={{
-              height: 32,
-              padding: "0 10px",
-              borderRadius: "var(--eh-button-radius)",
-              border: "var(--eh-glass-border)",
-              background: "var(--eh-glass-bg)",
+              background: "rgba(255, 255, 255, 0.06)",
+              border: "1px solid rgba(255, 255, 255, 0.25)",
+              borderRadius: "8px",
+              padding: "4px 8px",
               color: "var(--eh-text)",
+              fontSize: "12px",
+              backdropFilter: "blur(12px)",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+              opacity: 0.75
             }}
           >
             {RATE_OPTIONS.map((r) => (
@@ -215,99 +461,7 @@ const PlayerCard: React.FC = () => {
               </option>
             ))}
           </select>
-        </label>
-      </div>
-
-      {/* Transport row */}
-      <div
-        className="eh-hstack"
-        role="group"
-        aria-label="Transport controls"
-        style={{ justifyContent: "center", gap: 12, marginBottom: 8 }}
-      >
-        <button
-          className="eh-btn eh-iconbtn"
-          type="button"
-          aria-label="Previous track"
-          onClick={onPrev}
-          title="Previous"
-        >
-          <Icon name="transport.prev" aria-hidden="true" />
-        </button>
-
-        <button
-          className="eh-btn eh-iconbtn"
-          type="button"
-          aria-pressed={isPlaying}
-          aria-label={isPlaying ? "Pause" : "Play"}
-          onClick={onToggle}
-          title={isPlaying ? "Pause (Space)" : "Play (Space)"}
-          style={{ width: 44, height: 44 }}
-        >
-          <Icon name={isPlaying ? "transport.pause" : "transport.play"} aria-hidden="true" />
-        </button>
-
-        <button
-          className="eh-btn eh-iconbtn"
-          type="button"
-          aria-label="Next track"
-          onClick={onNext}
-          title="Next"
-        >
-          <Icon name="transport.next" aria-hidden="true" />
-        </button>
-      </div>
-
-      {/* Timeline */}
-      <div className="eh-vstack" style={{ gap: 6 }}>
-        <input
-          type="range"
-          min={0}
-          max={Math.max(0, duration || 0)}
-          step={0.01}
-          value={Math.min(currentTime, duration || 0)}
-          onChange={onSeekInput}
-          onMouseUp={commitSeek}
-          onKeyUp={(e) => (e.key === "Enter" || e.key === " " ? commitSeek() : undefined)}
-          aria-label="Seek"
-        />
-        <div
-          aria-live="polite"
-          aria-atomic="true"
-          style={{ fontSize: "var(--eh-fs-sm)", color: "var(--eh-text-muted)" }}
-        >
-          {progressText}
         </div>
-      </div>
-
-      {/* Volume row */}
-      <div
-        className="eh-hstack"
-        style={{ justifyContent: "space-between", alignItems: "center", marginTop: 10 }}
-      >
-        <button
-          className="eh-btn eh-iconbtn"
-          type="button"
-          aria-pressed={muted}
-          aria-label={muted ? "Unmute" : "Mute"}
-          onClick={onMute}
-          title={muted ? "Unmute" : "Mute"}
-        >
-          <Icon name={muted || volume === 0 ? "volume.mute" : "volume.on"} aria-hidden="true" />
-        </button>
-
-        <label className="eh-hstack" style={{ gap: 8, flex: 1, marginInline: 12 }}>
-          <span className="sr-only">Volume</span>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.01}
-            value={muted ? 0 : volume}
-            onChange={onVolume}
-            aria-label="Volume"
-          />
-        </label>
       </div>
     </article>
   );

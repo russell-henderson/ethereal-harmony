@@ -13,7 +13,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Lato:wght@400&display=swap");
 
 /* --------------------------------------------------
-   Root tokens (Dark first — our primary theme)
+   Root tokens (Dark first — primary theme)
    Toggle .theme-dark / .theme-light on <html> or <body> if needed.
    -------------------------------------------------- */
 :root,
@@ -29,9 +29,8 @@
   --eh-text-subtle: #A6B6D6;
 
   /* Glass tokens (strict) */
-  --eh-glass-bg: rgba(255, 255, 255, 0.12);
-  /* Stronger overlay for small text over bright visuals to keep AA */
-  --eh-glass-bg-strong: rgba(26, 43, 69, 0.30);
+  --eh-glass-bg: rgba(255, 255, 255, 0.18);            /* slight bump for contrast */
+  --eh-glass-bg-strong: rgba(26, 43, 69, 0.30);        /* for small text over visuals */
   --eh-glass-border-color: rgba(255, 255, 255, 0.25);
   --eh-glass-border: 1px solid var(--eh-glass-border-color);
   --eh-glass-radius: 16px;
@@ -46,10 +45,15 @@
   --eh-focus-offset: 2px;
   --eh-focus-glow: 0 0 0 3px rgba(0, 240, 255, 0.25);
 
-  /* TopBar surface (E: ensure indigo tone, slight translucency) */
+  /* TopBar surface */
   --eh-topbar-bg: rgba(26, 43, 69, 0.92);
   --eh-topbar-border: rgba(255, 255, 255, 0.12);
   --eh-topbar-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+
+  /* TopBar improvements */
+  --eh-topbar-icon-bg: rgba(255, 255, 255, 0.15);
+  --eh-topbar-icon-border: rgba(255, 255, 255, 0.25);
+  --eh-topbar-user-bg: rgba(255, 255, 255, 0.1);
 
   /* Typography */
   --eh-font-title: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
@@ -71,11 +75,15 @@
   --eh-gap-12: 12px;
   --eh-gap-16: 16px;
   --eh-gap-24: 24px;
+  --eh-gap-md: 16px;
+  --eh-gap-lg: 24px;
 
   /* Shape tokens for controls */
   --eh-radius-16: 16px;
   --eh-radius-12: 12px;
   --eh-radius-10: 10px;
+  --eh-radius: var(--eh-radius-16);
+  --eh-blur: 16px;
 
   /* Range/slider */
   --eh-range-track: rgba(255, 255, 255, 0.16);
@@ -85,15 +93,14 @@
   --eh-container-max: 1280px;
   --eh-container-pad: 16px;
 
-  /* Z-layers (keep sparse for perf) */
+  /* Layers */
   --eh-z-overlay: 30;
   --eh-z-toast: 40;
   --eh-z-modal: 50;
 }
 
-/* Light theme option — we keep glass stronger to hold contrast */
 :root.theme-light {
-  --eh-indigo: #f6f7fb;       /* page bg */
+  --eh-indigo: #f6f7fb;
   --eh-text: #0c1630;
   --eh-text-muted: #364564;
   --eh-text-subtle: #4d5c7a;
@@ -126,7 +133,7 @@
 }
 
 /* --------------------------------------------------
-   Minimal modern reset (kept small to respect bundle)
+   Minimal modern reset
    -------------------------------------------------- */
 *,
 *::before,
@@ -164,7 +171,7 @@ h3 { font-size: var(--eh-fs-lg); letter-spacing: 0.3px; }
 .eh-title { font-family: var(--eh-font-title); letter-spacing: 0.5px; }
 
 /* --------------------------------------------------
-   Accessibility — keyboard focus ring (only when visible)
+   Accessibility — focus ring
    -------------------------------------------------- */
 :where(
   button,
@@ -180,6 +187,7 @@ h3 { font-size: var(--eh-fs-lg); letter-spacing: 0.3px; }
   box-shadow: var(--eh-focus-glow);
 }
 :focus:not(:focus-visible) { outline: none; }
+
 /* Screen reader only utility */
 .sr-only,
 .visually-hidden {
@@ -199,9 +207,8 @@ h3 { font-size: var(--eh-fs-lg); letter-spacing: 0.3px; }
 .eh-clamp { max-width: 70ch; }
 
 /* --------------------------------------------------
-   Glassmorphism building blocks
+   Glassmorphism blocks
    -------------------------------------------------- */
-/* Generic glass surface (cards, panels) */
 .eh-glass {
   background: var(--eh-glass-bg);
   backdrop-filter: blur(var(--eh-glass-blur)) saturate(120%);
@@ -210,43 +217,148 @@ h3 { font-size: var(--eh-fs-lg); letter-spacing: 0.3px; }
   border-radius: var(--eh-glass-radius);
   box-shadow: var(--eh-shadow-1), inset 0 1px 0 rgba(255,255,255,0.20);
 }
-/* Stronger variant for small text areas (AA on bright viz) */
 .eh-glass--strong {
   background:
     linear-gradient(0deg, var(--eh-glass-bg-strong), var(--eh-glass-bg-strong)),
     var(--eh-glass-bg);
 }
-/* Card helper */
 .eh-card { padding: var(--eh-gap-16); border-radius: var(--eh-glass-radius); }
 
-/* Canvas layer (WebGL sits beneath UI) */
+/* Canvas layering */
 .eh-canvas-wrap { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 .eh-content-layer { position: relative; z-index: 1; }
 
 /* --------------------------------------------------
-   TopBar (D/E/F items from screenshot)
+   TopBar (A/B/C clean + blocking fix)
    -------------------------------------------------- */
 .topbar {
+  position: sticky;
+  top: 0;
+  height: var(--eh-topbar-h);
+  z-index: 30; /* above content, below modals */
   display: grid;
-  grid-template-columns: 1fr minmax(300px, 42%) auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: var(--eh-gap-12);
-  padding: 10px 14px;
-  background: var(--eh-topbar-bg);             /* Deep Indigo translucent */
+  gap: 24px;
+  padding: 0 24px;
+  background: var(--eh-topbar-bg);
   border: 1px solid var(--eh-topbar-border);
   border-radius: var(--eh-radius-16);
   box-shadow: var(--eh-topbar-shadow);
 }
-.topbar__left { display: flex; align-items: center; gap: var(--eh-gap-10, 10px); }
-.topbar__title { font-family: var(--eh-font-title); font-weight: 700; font-size: 14px; letter-spacing: .4px; color: #fff; }
-/* E: Status light — aqua glow indicating ready/online */
+
+.topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.topbar__center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Optional visible title (keep hidden in most cases to avoid duplication) */
+.topbar__title {
+  font-family: var(--eh-font-title);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: .4px;
+  color: #fff;
+}
+
+/* Status dot */
 .topbar__status {
-  width: 10px; height: 10px; border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
   background: var(--eh-aqua);
   box-shadow: 0 0 10px var(--eh-aqua), 0 0 20px rgba(0,240,255,.6);
   margin-left: 8px;
 }
-/* Center search input styling (glass) */
+
+/* Center wrapper never eats clicks outside the search itself */
+.topbar__center .searchbar,
+.topbar__center .searchbar * {
+  pointer-events: auto;
+}
+
+/* Brand visuals (decorative) */
+.topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brandmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--eh-aqua);
+}
+
+.topbar__silhouette {
+  width: 2px;
+  height: 16px;
+  background: var(--eh-text-muted);
+  border-radius: 1px;
+}
+
+/* Icon buttons */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+}
+.icon-btn:hover { background: rgba(255,255,255,0.06); }
+.icon-btn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(0,240,255,.9), 0 0 0 4px rgba(0,0,0,.3);
+  border-color: rgba(255,255,255,0.25);
+}
+
+/* Searchbar (glass) used inside topbar__center */
+.searchbar {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 640px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: var(--eh-radius-16);
+  background: var(--eh-glass-bg);
+  border: var(--eh-glass-border);
+  backdrop-filter: blur(var(--eh-glass-blur));
+}
+.searchbar__input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  color: #fff;
+  border: 0;
+  outline: none;
+  font: 400 14px/1 var(--eh-font-body, Lato, system-ui, sans-serif);
+}
+.searchbar__input::placeholder { color: rgba(255,255,255,0.7); }
+
+/* Optional generic input with glass styling */
 .input-glass {
   width: 100%; max-width: 560px; height: 38px;
   padding: 0 12px;
@@ -262,7 +374,37 @@ h3 { font-size: var(--eh-fs-lg); letter-spacing: 0.3px; }
 .input-glass:focus-visible { outline: var(--eh-focus-outer); outline-offset: var(--eh-focus-offset); box-shadow: var(--eh-focus-glow); }
 
 /* --------------------------------------------------
-   Buttons (glass) — used across toolbar/transport/etc.
+   SidePanel guards so it does not block clicks when closed
+   -------------------------------------------------- */
+/* SidePanel visibility hooks */
+.sidepanel {
+  width: 100%;
+  height: 100%;
+  background: var(--eh-glass-bg);
+  border: var(--eh-glass-border);
+  border-radius: var(--eh-glass-radius);
+  backdrop-filter: blur(var(--eh-glass-blur));
+  box-shadow: var(--eh-shadow-1);
+  overflow: hidden;
+}
+
+.sidepanel[data-state="open"] {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Keep layout reserved width when open on desktop */
+@media (min-width: 1024px) {
+  .layout-shell {
+    grid-template-columns: var(--sidepanel-w, 280px) 1fr;
+  }
+}
+
+/* Header layout with search - removed conflicting styles */
+
+/* --------------------------------------------------
+   Buttons (glass) used across toolbar/transport
    -------------------------------------------------- */
 .glass-btn {
   min-width: 44px; min-height: 36px;
@@ -282,24 +424,19 @@ h3 { font-size: var(--eh-fs-lg); letter-spacing: 0.3px; }
   background: color-mix(in oklab, var(--eh-aqua) 20%, var(--eh-glass-bg));
   border-color: color-mix(in oklab, var(--eh-aqua) 60%, var(--eh-glass-border-color));
 }
-/* Primary emphasis (center play/pause) */
 .glass-btn--primary {
   background: color-mix(in oklab, var(--eh-aqua) 12%, var(--eh-glass-bg));
   border-color: color-mix(in oklab, var(--eh-aqua) 45%, var(--eh-glass-border-color));
 }
-
-/* Icon-only variation */
 .eh-iconbtn { width: 36px; height: 36px; padding: 0; border-radius: var(--eh-radius-10); }
 
 /* --------------------------------------------------
-   Transport / Playback cluster layout (A/B/C)
+   Transport / Playback layout
    -------------------------------------------------- */
 .playback-buttons {
   display: flex; align-items: center; gap: var(--eh-gap-8);
 }
-.playback-buttons__spacer {
-  flex: 1 1 auto;
-}
+.playback-buttons__spacer { flex: 1 1 auto; }
 
 /* --------------------------------------------------
    Range inputs (sliders: intensity, bloom, volume)
@@ -314,7 +451,7 @@ input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none; appearance: none;
   width: 14px; height: 14px; border-radius: 50%;
   background: var(--eh-range-thumb); border: 2px solid rgba(0,0,0,0.15);
-  margin-top: -6px; /* center thumb on track */
+  margin-top: -6px;
 }
 input[type="range"]::-moz-range-thumb {
   width: 14px; height: 14px; border-radius: 50%;
@@ -350,7 +487,7 @@ input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: var(--eh-focus
 .eh-segment__item:focus-visible { outline: var(--eh-focus-outer); outline-offset: var(--eh-focus-offset); }
 
 /* --------------------------------------------------
-   Scrollbar (WebKit) — subtle for dark UI
+   Scrollbar (WebKit)
    -------------------------------------------------- */
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-thumb {
@@ -380,7 +517,7 @@ input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: var(--eh-focus
 }
 
 /* --------------------------------------------------
-   Reduced motion — respect user preference
+   Reduced motion
    -------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -392,16 +529,383 @@ input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: var(--eh-focus
 }
 
 /* --------------------------------------------------
-   Legacy helpers kept for compatibility with current code
+   Legacy helpers for compatibility
    -------------------------------------------------- */
 .glass-panel {
   border-radius: 16px;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.18);
   border: 1px solid rgba(255, 255, 255, 0.25);
 }
 .title-font {
   font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
   font-weight: 700;
+}
+
+/* ==========================================================================
+   COMPONENT STYLES
+   ========================================================================== */
+
+/* TopBar improvements */
+.topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.topbar__title h1 {
+  font-family: var(--eh-font-title);
+  font-weight: 700;
+  color: var(--eh-text);
+  white-space: nowrap;
+}
+
+.topbar__menu {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.menu-item {
+  font-size: 12px;
+  color: var(--eh-text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.menu-item:hover {
+  color: var(--eh-text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* Increased gap for better spacing */
+}
+
+.topbar__search {
+  display: flex;
+  align-items: center;
+  margin-right: 8px; /* Add some space before the user avatar */
+}
+
+.topbar__user {
+  display: flex;
+  align-items: center;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--eh-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-avatar:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.topbar__settings {
+  transition: all 0.2s ease;
+}
+
+.topbar__settings:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Collapsible TopBar */
+.topbar-collapsed {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+  background: rgba(26, 43, 69, 0.8);
+  backdrop-filter: blur(8px);
+}
+
+/* Collapsible SidePanel */
+.sidepanel-collapsed {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 25;
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+  background: rgba(26, 43, 69, 0.8);
+  backdrop-filter: blur(8px);
+  border-radius: 0 8px 8px 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: none;
+}
+
+.collapse-toggle {
+  transition: all 0.2s ease;
+}
+
+.collapse-toggle:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+/* LED Indicator Animation */
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+    box-shadow: 0 0 10px var(--eh-aqua), 0 0 20px rgba(0,240,255,.4);
+  }
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 15px var(--eh-aqua), 0 0 30px rgba(0,240,255,.8);
+  }
+}
+
+.led-indicator {
+  flex-shrink: 0;
+}
+
+/* SidePanel improvements */
+.sidepanel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.sidepanel__brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.sidepanel__label {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--eh-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sidepanel__toggle {
+  position: absolute;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidepanel__toggle:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.sidepanel__nav {
+  padding: 16px;
+}
+
+.sidepanel__search-integrated {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.navlist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.navitem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  color: var(--eh-text);
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 4px;
+}
+
+.navitem:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.navitem__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--eh-aqua);
+  flex-shrink: 0;
+}
+
+.navitem__label {
+  font-weight: 500;
+  font-size: 14px;
+  flex: 1;
+}
+
+/* Improved icon button styling */
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--eh-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.icon-btn:active {
+  transform: translateY(0);
+}
+
+/* Glass surface utilities */
+.glass-surface {
+  background: var(--eh-glass-bg);
+  border: var(--eh-glass-border);
+  border-radius: var(--eh-glass-radius);
+  backdrop-filter: blur(var(--eh-glass-blur));
+  box-shadow: var(--eh-shadow-1);
+}
+
+.eh-glass {
+  background: var(--eh-glass-bg);
+  border: var(--eh-glass-border);
+  border-radius: var(--eh-glass-radius);
+  backdrop-filter: blur(var(--eh-glass-blur));
+  box-shadow: var(--eh-shadow-1);
+}
+
+/* Layout utilities */
+.eh-hstack {
+  display: flex;
+  align-items: center;
+}
+
+.eh-vstack {
+  display: flex;
+  flex-direction: column;
+}
+
+.eh-title {
+  font-family: var(--eh-font-title);
+  font-weight: 700;
+  color: var(--eh-text);
+}
+
+.eh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: var(--eh-radius-12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--eh-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.eh-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.eh-iconbtn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: var(--eh-radius-12);
+}
+
+/* Controls grid */
+.eh-controls-grid {
+  display: flex;
+  align-items: center;
+  gap: var(--eh-gap-md);
+  padding: var(--eh-gap-md);
+  background: var(--eh-glass-bg);
+  border: var(--eh-glass-border);
+  border-radius: var(--eh-glass-radius);
+  backdrop-filter: blur(var(--eh-glass-blur));
+  min-height: 60px; /* Proper height for HDR/Dimmer controls bar */
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sidepanel__search {
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sidepanel__hide-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sidepanel__hide-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: translateX(-2px);
 }

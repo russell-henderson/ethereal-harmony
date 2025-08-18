@@ -7,18 +7,21 @@
  *    (player/viz/settings). Keep it tiny, predictable, and accessibility-first.
  *
  * Scope (Phase 1/2)
- *  - Sidebar collapse state (persisted locally, privacy-first).
+ *  - SidePanel open/closed (persisted locally).
  *  - Controls rail pinning (persisted).
- *  - Diagnostics toggle (e.g., FPS meter) (persisted).
+ *  - Diagnostics toggle (FPS meter) (persisted).
  *  - Lightweight modal manager for simple in-app overlays (NOT router-level).
  *  - A few layout measurements (topBarHeight) for responsive adjustments.
  *
- * Design
+ * Architecture
  *  - Zustand + persist (localStorage). We partialize persisted keys only.
- *  - We include a `migrate` function to avoid the "couldn't be migrated"
- *    warning when shapes/versions change.
- *  - We export *stable* selector helpers (return primitives), so components
- *    can subscribe without creating new object identities each render.
+ *  - Includes `migrate` to silence "couldn't be migrated" warnings across shapes/versions.
+ *  - Exposes stable primitive selectors to minimize re-renders.
+ *
+ * Back-compat
+ *  - Earlier builds used `sidebarCollapsed` + `toggleSidebar()`.
+ *  - New API is `sidePanelOpen` + `toggleSidePanel()` + `setSidePanelOpen(open)`.
+ *  - We migrate persisted data and keep the old actions as no-op wrappers.
  */
 
 import { create } from "zustand";
@@ -36,20 +39,23 @@ export type UIModal =
   | "device-picker";
 
 export type UIState = {
-  // Layout
-  sidebarCollapsed: boolean; // left nav collapsed?
-  controlsPinned: boolean;   // keep the controls rail visible on top of viz
-  topBarHeight: number;      // measured in px (ephemeral, not persisted)
+  // Layout / shells
+  sidePanelOpen: boolean;     // NEW canonical flag (true = visible)
+  /** @deprecated use sidePanelOpen; kept for migration/rare legacy reads */
+  sidebarCollapsed?: boolean; // legacy (true = hidden)
+
+  controlsPinned: boolean;    // keep controls rail visible atop viz
+  topBarHeight: number;       // measured in px (ephemeral, not persisted)
 
   // Diagnostics
-  showFps: boolean;          // show FPS meter overlay
+  showFps: boolean;           // show FPS overlay
 
   // Overlays / modals
   modal: UIModal;
 
-  // Actions
-  setSidebarCollapsed: (v: boolean) => void;
-  toggleSidebar: () => void;
+  // Actions (canonical)
+  setSidePanelOpen: (open: boolean) => void;
+  toggleSidePanel: () => void;
 
   setControlsPinned: (v: boolean) => void;
   toggleControlsPinned: () => void;
@@ -64,6 +70,12 @@ export type UIState = {
 
   /** Reset only ephemeral (non-persisted) bits. */
   resetEphemeral: () => void;
+
+  // Back-compat actions (no-op wrappers that delegate to canonical)
+  /** @deprecated use toggleSidePanel */
+  toggleSidebar?: () => void;
+  /** @deprecated use setSidePanelOpen */
+  setSidebarCollapsed?: (v: boolean) => void;
 };
 
 /* ----------------------------------------------------------------------------
@@ -71,67 +83,82 @@ export type UIState = {
  * ------------------------------------------------------------------------- */
 
 const STORAGE_KEY = "ui-v1";
-const STORAGE_VERSION = 2;
+const STORAGE_VERSION = 3; // bump: introduce sidePanelOpen canonical
 
 /**
- * Default (boot) values. Keep these minimal and predictable.
+ * Default (boot) values. Keep minimal and predictable.
+ * Mobile-first collapsed; desktop may auto-open in component on first mount.
  */
 const DEFAULTS: UIState = {
-  sidebarCollapsed: false,
+  sidePanelOpen: false,
+  // legacy shadow value provided for type completeness (not used at runtime)
+  sidebarCollapsed: undefined,
+
   controlsPinned: true,
   topBarHeight: 56,
   showFps: false,
   modal: "none",
 
-  setSidebarCollapsed: () => {},
-  toggleSidebar: () => {},
-
+  // Filled by store initializer
+  setSidePanelOpen: () => {},
+  toggleSidePanel: () => {},
   setControlsPinned: () => {},
   toggleControlsPinned: () => {},
-
   setTopBarHeight: () => {},
   setShowFps: () => {},
   toggleFps: () => {},
-
   openModal: () => {},
   closeModal: () => {},
-
   resetEphemeral: () => {},
+
+  // Back-compat placeholders
+  toggleSidebar: () => {},
+  setSidebarCollapsed: () => {},
 };
 
 /**
- * Migration:
- * Map older shapes/keys to the current schema and guarantee defaults.
- * This keeps Zustand from warning about missing migrate().
+ * Migration
+ *  v1 → v2 (your previous code handled this)
+ *  v2 → v3:
+ *    - Canonicalize to `sidePanelOpen` (inverse of legacy `sidebarCollapsed`)
+ *    - Carry over showFps and controlsPinned
+ *    - Do NOT persist/restore ephemeral `modal` and `topBarHeight`
  */
-function migrate(
-  persisted: unknown,
-  fromVersion: number
-): UIState {
+function migrate(persisted: unknown, fromVersion: number): UIState {
   // Start from defaults so ANY missing keys fall back safely.
   const base: UIState = { ...DEFAULTS };
 
-  // If we have no object, return defaults.
   if (!persisted || typeof persisted !== "object") return base;
-
   const s = persisted as Partial<Record<keyof UIState, any>>;
 
-  // v1 -> v2:
-  //  - "collapsedNavigation" (legacy) becomes "sidebarCollapsed"
-  //  - carry over showFps & controlsPinned if present
-  //  - ignore function fields if they exist in persisted payload
-  if (fromVersion <= 1) {
-    if (typeof s.sidebarCollapsed === "boolean") base.sidebarCollapsed = s.sidebarCollapsed;
-    else if (typeof (s as any).collapsedNavigation === "boolean")
-      base.sidebarCollapsed = (s as any).collapsedNavigation;
+  // v1 → v2 mapping existed previously for naming; keep behavior by reading both.
+  // v2 → v3 canonicalization happens below.
+  // We read both `sidebarCollapsed` and `sidePanelOpen` if present,
+  // but prefer explicit `sidePanelOpen` because it's the new canonical flag.
+  let sidePanelOpen: boolean | undefined = undefined;
 
-    if (typeof s.controlsPinned === "boolean") base.controlsPinned = s.controlsPinned;
-    if (typeof s.showFps === "boolean") base.showFps = s.showFps;
-    // modal/topBarHeight are ephemeral; do not migrate persisted values for them.
-    return base;
+  // If an older persist wrote `sidePanelOpen`, trust it.
+  if (typeof (s as any).sidePanelOpen === "boolean") {
+    sidePanelOpen = (s as any).sidePanelOpen;
   }
 
-  // Future versions can be handled here, always returning a FULL UIState object.
+  // Otherwise, infer from legacy `sidebarCollapsed` if available.
+  if (typeof (s as any).sidebarCollapsed === "boolean" && sidePanelOpen === undefined) {
+    // legacy: collapsed=true meant hidden; open = !collapsed
+    sidePanelOpen = !(s as any).sidebarCollapsed;
+  }
+
+  // Finalize open flag
+  base.sidePanelOpen = sidePanelOpen ?? DEFAULTS.sidePanelOpen;
+
+  // Carry other persisted choices forward
+  if (typeof s.controlsPinned === "boolean") base.controlsPinned = s.controlsPinned;
+  if (typeof s.showFps === "boolean") base.showFps = s.showFps;
+
+  // Explicitly avoid restoring ephemeral fields
+  base.topBarHeight = DEFAULTS.topBarHeight;
+  base.modal = "none";
+
   return base;
 }
 
@@ -144,8 +171,9 @@ export const useUIStore = create<UIState>()(
     (set, get) => ({
       ...DEFAULTS,
 
-      setSidebarCollapsed: (v) => set({ sidebarCollapsed: !!v }),
-      toggleSidebar: () => set({ sidebarCollapsed: !get().sidebarCollapsed }),
+      // Canonical actions
+      setSidePanelOpen: (open) => set({ sidePanelOpen: !!open }),
+      toggleSidePanel: () => set({ sidePanelOpen: !get().sidePanelOpen }),
 
       setControlsPinned: (v) => set({ controlsPinned: !!v }),
       toggleControlsPinned: () => set({ controlsPinned: !get().controlsPinned }),
@@ -163,6 +191,10 @@ export const useUIStore = create<UIState>()(
       closeModal: () => set({ modal: "none" }),
 
       resetEphemeral: () => set({ modal: "none", topBarHeight: DEFAULTS.topBarHeight }),
+
+      // Back-compat shims
+      toggleSidebar: () => set({ sidePanelOpen: !get().sidePanelOpen }),
+      setSidebarCollapsed: (v: boolean) => set({ sidePanelOpen: !v }),
     }),
     {
       name: STORAGE_KEY,
@@ -174,7 +206,9 @@ export const useUIStore = create<UIState>()(
        * Do NOT persist ephemeral bits like modal/topBarHeight.
        */
       partialize: (s) => ({
-        sidebarCollapsed: s.sidebarCollapsed,
+        sidePanelOpen: s.sidePanelOpen, // NEW canonical key
+        // keep writing this for one more version window if you want dual-writes:
+        // sidebarCollapsed: !s.sidePanelOpen,
         controlsPinned: s.controlsPinned,
         showFps: s.showFps,
       }),
@@ -185,14 +219,10 @@ export const useUIStore = create<UIState>()(
 );
 
 /* ----------------------------------------------------------------------------
- * Selector helpers (stable, primitive returns)
+ * Selectors (stable, primitive returns)
  * ------------------------------------------------------------------------- */
-/**
- * IMPORTANT: Exporting small, primitive selectors helps consumers avoid
- * re-renders and React's "getSnapshot should be cached" warnings that can
- * happen when selectors return new object identities every render.
- */
-export const selectSidebarCollapsed = (s: UIState) => s.sidebarCollapsed;
+
+export const selectSidePanelOpen = (s: UIState) => s.sidePanelOpen;
 export const selectControlsPinned = (s: UIState) => s.controlsPinned;
 export const selectShowFps = (s: UIState) => s.showFps;
 export const selectModal = (s: UIState) => s.modal;
@@ -202,22 +232,35 @@ export const selectTopBarHeight = (s: UIState) => s.topBarHeight;
  * Convenience imperative helpers (non-hook usage)
  * ------------------------------------------------------------------------- */
 
-/** Programmatically open a modal. */
 export function openModal(modal: UIModal) {
   useUIStore.getState().openModal(modal);
 }
-
-/** Programmatically close any modal. */
 export function closeModal() {
   useUIStore.getState().closeModal();
 }
 
-/** Toggle the sidebar (e.g., from a keyboard shortcut). */
-export function toggleSidebar() {
-  useUIStore.getState().toggleSidebar();
+/** Toggle the SidePanel (e.g., from a keyboard shortcut). */
+export function toggleSidePanel() {
+  useUIStore.getState().toggleSidePanel();
+}
+
+/** Programmatically open/close the SidePanel. */
+export function setSidePanelOpen(open: boolean) {
+  useUIStore.getState().setSidePanelOpen(open);
 }
 
 /** Toggle diagnostics overlay. */
 export function toggleFps() {
   useUIStore.getState().toggleFps();
 }
+
+/* ----------------------------------------------------------------------------
+ * Notes
+ * -------------------------------------------------------------------------
+ * - Components should subscribe with primitive selectors to avoid rerenders:
+ *     const isOpen = useUIStore(selectSidePanelOpen);
+ * - SidePanel auto-open-on-desktop (first mount) should be implemented in the
+ *   component, not here, to keep the store environment-agnostic and testable.
+ * - Back-compat shims let older code paths continue to work while we finish
+ *   renaming across the codebase.
+ */

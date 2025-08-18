@@ -1,109 +1,188 @@
 // src/lib/utils/IconRegistry.ts
-// Central icon registry with a tiny alias layer for back-compat.
-// If you see "[IconRegistry] Unknown icon key", either fix the call-site to a semantic key
-// or add a one-line alias below.
+/**
+ * Central icon mapping + safe <Icon/> wrapper.
+ * - Supports both canonical keys and legacy dotted aliases (e.g., "transport.play").
+ * - Logs once for unknown names and renders a harmless <span> instead of crashing.
+ */
 
 import React from "react";
 import {
-  Waves,
-  Library,
-  ListMusic,
-  Compass,
-  SkipBack,
-  SkipForward,
+  // Core UI
+  Menu,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
+  Cog,
+  Search,
+  EllipsisVertical,
+  X,
+  User,
+  ArrowRight,
+  Upload,
+  // Player / transport
   Play,
   Pause,
+  SkipForward,
+  SkipBack,
+  Repeat,
+  Shuffle,
+  // Volume
   Volume2,
   VolumeX,
-  Disc3,
-  AudioWaveform,
-  Settings,
-  Search
+  // App / nav metaphors
+  AppWindow,
+  Library as LibraryIcon,
+  ListMusic,
+  Compass,
+  Waves,
 } from "lucide-react";
 
-export type IconKey =
-  | "app"
-  | "search"
+/** Canonical (preferred) keys */
+type CanonicalIconName =
+  | "menu"
+  | "chevronLeft"
+  | "chevronRight"
+  | "chevronUp"
+  | "chevronDown"
   | "settings"
-  | "nav.library"
-  | "nav.playlists"
-  | "nav.discovery"
-  | "transport.prev"
+  | "search"
+  | "kebab"
+  | "close"
+  | "user"
+  | "enter"
+  | "upload"
+  | "play"
+  | "pause"
+  | "next"
+  | "prev"
   | "transport.play"
   | "transport.pause"
   | "transport.next"
-  | "media.disc"
-  | "media.waveform"
-  | "volume.on"
-  | "volume.mute";
+  | "transport.prev"
+  | "repeat"
+  | "shuffle"
+  | "volume"       // on
+  | "mute"         // off
+  | "app"
+  | "library"
+  | "playlists"
+  | "discovery"
+  | "waves";
 
-export const iconMap: Record<IconKey, React.ComponentType<any>> = {
-  app: Waves,
+/** Primary canonical registry */
+const canonical: Record<CanonicalIconName, React.ComponentType<React.ComponentPropsWithoutRef<'svg'>>> = {
+  // Core UI
+  menu: Menu,
+  chevronLeft: ChevronLeft,
+  chevronRight: ChevronRight,
+  chevronUp: ChevronUp,
+  chevronDown: ChevronDown,
+  settings: Cog,
   search: Search,
-  settings: Settings,
+  kebab: EllipsisVertical,
+  close: X,
+  user: User,
+  enter: ArrowRight,
+  upload: Upload,
 
-  "nav.library": Library,
-  "nav.playlists": ListMusic,
-  "nav.discovery": Compass,
-
-  "transport.prev": SkipBack,
+  // Player / transport
+  play: Play,
+  pause: Pause,
+  next: SkipForward,
+  prev: SkipBack,
   "transport.play": Play,
   "transport.pause": Pause,
   "transport.next": SkipForward,
+  "transport.prev": SkipBack,
+  repeat: Repeat,
+  shuffle: Shuffle,
 
-  "media.disc": Disc3,
-  "media.waveform": AudioWaveform,
-
+  // Volume
+  volume: Volume2,
+  mute: VolumeX,
   "volume.on": Volume2,
-  "volume.mute": VolumeX
+  "volume.off": VolumeX,
+
+  // App / nav metaphors
+  app: AppWindow,
+  library: LibraryIcon,
+  playlists: ListMusic,
+  discovery: Compass,
+  waves: Waves,
 };
 
 /**
- * Back-compat aliases. Map any legacy/"loose" names to the semantic keys above.
- * NOTE: Keep this minimal and delete entries once you’ve updated call-sites.
+ * Aliases for legacy/dotted names still present in some components
+ * e.g. "transport.play", "volume.on".
  */
-const aliasMap: Record<string, IconKey> = {
-  // Old generic names we’ve seen in the codebase:
-  music: "media.disc",
-  note: "media.disc",
-  prev: "transport.prev",
-  next: "transport.next",
-  play: "transport.play",
-  pause: "transport.pause",
-  library: "nav.library",
-  playlists: "nav.playlists",
-  discovery: "nav.discovery",
-  waveform: "media.waveform",
-  volume: "volume.on",
-  mute: "volume.mute",
-  settings: "settings",
-  search: "search",
-  app: "app"
+const aliases: Record<string, React.ComponentType<React.ComponentPropsWithoutRef<'svg'>>> = {
+  // Transport namespace
+  "transport.play": canonical.play,
+  "transport.pause": canonical.pause,
+  "transport.next": canonical.next,
+  "transport.prev": canonical.prev,
+  "transport.repeat": canonical.repeat,
+  "transport.shuffle": canonical.shuffle,
+
+  // Volume namespace
+  "volume.on": canonical.volume,
+  "volume.off": canonical.mute,
+
+  // App/nav namespace (if any legacy usage exists)
+  "app.logo": canonical.app,
+  "nav.library": canonical.library,
+  "nav.playlists": canonical.playlists,
+  "nav.discovery": canonical.discovery,
 };
 
-const normalize = (key: string): IconKey | undefined => {
-  // Exact match to a semantic key?
-  if ((iconMap as any)[key]) return key as IconKey;
-  // Resolve alias (case-insensitive, tolerate stray spaces)
-  const k = key.trim().toLowerCase();
-  return aliasMap[k];
+export const iconRegistry: Record<string, React.ComponentType<React.ComponentPropsWithoutRef<'svg'>>> = {
+  ...canonical,
+  ...aliases,
 };
 
-export const getIcon = (key: IconKey | string): React.ComponentType<any> => {
-  const normalized = normalize(String(key));
-  if (!normalized) {
-    throw new Error(`[IconRegistry] Unknown icon key: "${key}"`);
+export type IconProps = {
+  name: string;                 // allow any string; we guard at runtime
+  size?: number;
+  width?: number;
+  height?: number;
+  className?: string;
+  strokeWidth?: number;
+  "aria-hidden"?: boolean;
+  role?: string;
+  title?: string;
+};
+
+/** Safe <Icon/> that won’t crash on unknown names */
+const unknownWarned = new Set<string>();
+
+export const Icon: React.FC<IconProps> = ({
+  name,
+  size = 20,
+  width,
+  height,
+  className,
+  strokeWidth = 1.75,
+  ...rest
+}) => {
+  const Cmp = iconRegistry[name];
+  if (!Cmp) {
+    if (!unknownWarned.has(name)) {
+      // eslint-disable-next-line no-console
+      console.error(
+        `[IconRegistry] Unknown icon "${name}". Add it to iconRegistry or update usages. Rendering a placeholder.`
+      );
+      unknownWarned.add(name);
+    }
+    return React.createElement("span", { className, "aria-hidden": "true", ...rest });
   }
-  return iconMap[normalized];
+  return React.createElement(Cmp, {
+    width: width || size,
+    height: height || size,
+    strokeWidth,
+    className,
+    ...rest,
+  });
 };
 
-export const Icon: React.FC<
-  { name: IconKey | string } & React.ComponentProps<"svg">
-> = ({ name, ...svgProps }) => {
-  const Comp = getIcon(name);
-  return <Comp aria-hidden focusable="false" {...svgProps} />;
-};
-
-// Back-compat default export (you can remove once all imports are named).
-const IconRegistry = { getIcon, Icon, iconMap };
-export default IconRegistry;
+export default Icon;
