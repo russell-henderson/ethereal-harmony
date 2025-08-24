@@ -1,14 +1,44 @@
-import React from "react";
 
-// Placeholder hooks/selectors for now-playing, FPS, and queue size
-// Replace with real selectors from your stores as needed
-const useNowPlaying = () => ({
-  title: "Unknown Title",
-  artist: "Unknown Artist",
-  duration: 0,
-});
-const useFPS = () => ({ tier: "Medium", fps: 60 });
-const useQueueSize = () => 0;
+import React, { useEffect, useState } from "react";
+import { usePlayerStore } from "@/lib/state/usePlayerStore";
+import styles from "./SessionUtilityRow.module.css";
+
+// Real now-playing selector from Zustand store
+const useNowPlaying = () => {
+  const current = usePlayerStore((s) => s.current);
+  return {
+    title: current?.title || "Unknown Title",
+    artist: current?.artist || "Unknown Artist",
+    duration: current?.duration || 0,
+  };
+};
+
+// FPS/tier hook using PerfEvents
+const useFPS = () => {
+  const [fps, setFps] = useState(60);
+  const [tier, setTier] = useState("Medium");
+  useEffect(() => {
+    let mounted = true;
+    // Lazy-load PerfEvents to avoid import cycles
+    import("@/lib/diagnostics/PerfEvents").then((mod) => {
+      const PerfEvents = mod.PerfEvents || mod.default;
+      if (!PerfEvents?.onTick) return;
+      const unsub = PerfEvents.onTick((detail) => {
+        if (!mounted) return;
+        setFps(Math.round(detail.fps));
+        // Tier logic: you can refine this as needed
+        setTier(detail.fps >= 55 ? "High" : detail.fps >= 40 ? "Medium" : "Low");
+      });
+      return unsub;
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+  return { tier, fps };
+};
+
+const useQueueSize = () => usePlayerStore((s) => s.queue.length);
 
 const fmtTime = (s: number) => {
   if (!Number.isFinite(s) || s < 0) s = 0;
@@ -26,11 +56,10 @@ export const SessionUtilityRow: React.FC = () => {
 
   // TODO: Wire up click to focus PlayerCard and open queue
   return (
-    <div className="session-utility-row eh-glass" style={{ display: "flex", alignItems: "center", gap: 16, padding: "8px 20px", borderRadius: 12, margin: "8px 0" }}>
+    <div className={`${styles["session-utility-row"]} eh-glass`}>
       {/* Now-playing summary */}
       <button
-        className="utility-nowplaying"
-        style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", fontWeight: 600 }}
+        className={styles["utility-nowplaying"]}
         aria-label="Focus player card"
         // onClick={...}
       >
@@ -38,21 +67,19 @@ export const SessionUtilityRow: React.FC = () => {
       </button>
       {/* Hotkeys cheat button */}
       <button
-        className="utility-hotkeys"
-        style={{ background: "none", border: "none", color: "inherit", cursor: "pointer" }}
+        className={styles["utility-hotkeys"]}
         aria-label="Show hotkeys cheat sheet"
         // onClick={...}
       >
         ⌨️ Hotkeys
       </button>
       {/* Performance chip */}
-      <span className="utility-fps" style={{ fontSize: 12, color: "var(--eh-text-muted)", background: "rgba(0,240,255,0.08)", borderRadius: 8, padding: "2px 8px" }}>
+      <span className={styles["utility-fps"]}>
         {tier} • {fps} FPS
       </span>
       {/* Queue size chip */}
       <button
-        className="utility-queue"
-        style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", fontSize: 12, backgroundColor: "rgba(127,106,159,0.12)", borderRadius: 8, padding: "2px 8px" }}
+        className={styles["utility-queue"]}
         aria-label="Open queue"
         // onClick={...}
       >

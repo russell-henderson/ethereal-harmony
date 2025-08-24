@@ -106,7 +106,7 @@ const applyRootAppearance = (theme: Theme, density: Density) => {
   const effectiveTheme = theme === "system" ? (prefersDark ? "dark" : "light") : theme;
 
   // Class management
-  const cls = new Set(root.className.split(/\s+/).filter(Boolean));
+  const cls = new Set((root.className || "").split(/\s+/).filter(Boolean));
   cls.delete("eh-light");
   cls.delete("eh-dark");
   cls.delete("eh-density-comfortable");

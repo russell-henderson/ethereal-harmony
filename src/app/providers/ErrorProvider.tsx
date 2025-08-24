@@ -1,3 +1,13 @@
+// Helper to normalize any error-like value to a consistent shape
+function toErrorLike(err: unknown): { message: string; stack?: string } {
+  if (err instanceof Error) return { message: err.message, stack: err.stack };
+  if (typeof err === "string") return { message: err };
+  try {
+    return { message: JSON.stringify(err) };
+  } catch {
+    return { message: "Unknown error" };
+  }
+}
 // src/app/providers/ErrorProvider.tsx
 import React, {
   createContext,
@@ -81,28 +91,33 @@ export const ErrorProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [escalatedError, setEscalatedError] = useState<Error | null>(null);
 
-  const reportError = useCallback<
-    GlobalErrorContextValue["reportError"]
-  >((error, info) => {
-    const err =
-      error instanceof Error
-        ? error
-        : new Error(
-            typeof error === "string"
-              ? error
-              : "Unknown application error (non-Error thrown)"
-          );
 
-    // Non-invasive enrichment for developer visibility in dev tools.
-    try {
-      (err as any).__eh_info__ = info ?? {};
-    } catch {
-      /* ignore enrichment failures */
-    }
-
-    // Escalate into ErrorBoundary by causing a render throw.
-    setEscalatedError(err);
-  }, []);
+  const reportError = useCallback<GlobalErrorContextValue["reportError"]>(
+    (error, info) => {
+      // Normalize error to Error instance for escalation, but keep original info for dev tools
+      let errObj: Error;
+      if (error instanceof Error) {
+        errObj = error;
+      } else if (typeof error === "string") {
+        errObj = new Error(error);
+      } else {
+        // Try to stringify, fallback to generic
+        try {
+          errObj = new Error(JSON.stringify(error));
+        } catch {
+          errObj = new Error("Unknown application error (non-Error thrown)");
+        }
+      }
+      // Non-invasive enrichment for developer visibility in dev tools.
+      try {
+        (errObj as any).__eh_info__ = info ?? {};
+      } catch {
+        /* ignore enrichment failures */
+      }
+      setEscalatedError(errObj);
+    },
+    []
+  );
 
   // Subscribe to global browser error channels and escalate into the boundary.
   useEffect(() => {

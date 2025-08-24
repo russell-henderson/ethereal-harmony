@@ -12,7 +12,10 @@
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "e2e": "playwright test",
     "tree": "node scripts/export-tree.mjs",
-    "tree:src": "node scripts/export-tree.mjs --root src --out src-structure.txt"
+    "tree:src": "node scripts/export-tree.mjs --root src --out src-structure.txt",
+    "changelog": "node scripts/update-changelog.mjs",
+    "changelog:dry": "node scripts/update-changelog.mjs --dry",
+    "release": "node scripts/update-changelog.mjs --tag && echo \"✅ Update package.json version separately or run npm version\""
   },
   "dependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",

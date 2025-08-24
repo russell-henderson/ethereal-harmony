@@ -89,7 +89,6 @@ This document tracks Ethereal Harmony’s phases, milestones, and future enhance
 - Import throughput for 1k+ tracks.
 - Playback error rate < 2%.
 
-
 ---
 
 [← Back to Documentation Index](./README.md)
