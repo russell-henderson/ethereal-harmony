@@ -1,11 +1,6 @@
-<picture width="500">
-  <img
-    src="https://github.com/russell-henderson/ethereal-harmony/blob/master/src/assets/title.jpg?raw=true"
-    alt="Ethereal Harmony Music App"
-  />
-</picture>
-
 # 🎶 Ethereal Harmony
+
+![Ethereal Harmony Music App](https://github.com/russell-henderson/ethereal-harmony/blob/master/src/assets/title.jpg?raw=true)
 
 A high-performance, immersive web audio player with a real-time, audio-reactive Three.js visualizer and a sleek glassmorphism UI. Built for speed, accessibility, and trust — all data stays local by default.
 

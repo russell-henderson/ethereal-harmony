@@ -13,9 +13,9 @@
 **Entrypoints (by language):**
 
 - TypeScript/React SPA:
- 	- Main entry: `src/index.tsx` (invoked by Vite)
- 	- App root: `src/app/App.tsx`
- 	- No backend/server entrypoints detected (frontend-only app)
+  - Main entry: `src/index.tsx` (invoked by Vite)
+  - App root: `src/app/App.tsx`
+  - No backend/server entrypoints detected (frontend-only app)
 
 **Detected Frameworks/Libraries & Versions:**
 
