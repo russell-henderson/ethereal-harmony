@@ -7,7 +7,6 @@
 
 ### Changed
 
-
 ### Changed entry
 
 All notable changes to the Ethereal Harmony project will be documented in this file.
@@ -18,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2025-01-XX
 
 ### Added
+
 - Session Utility Row: Added a persistent utility row to the app shell, featuring a mini now-playing summary (title, artist, duration), a live FPS/tier chip, and a queue size chip. All values are wired to real state and update live as playback and performance change. The row is styled using a new CSS module for maintainability and theme consistency.
 
 ### 🎯 Major Features Added

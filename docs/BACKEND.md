@@ -70,7 +70,6 @@ Defensive programming in playback and audio modules (never throw on user actions
 
 - See `src/lib/audio/`, `src/lib/diagnostics/`, `src/lib/state/`, and `src/components/feedback/ErrorBoundary.tsx`.
 
-
 ---
 
 [← Back to Documentation Index](./README.md)

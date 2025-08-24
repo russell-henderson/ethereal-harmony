@@ -155,7 +155,6 @@ Toggles produce visible, smooth changes at 55–60 FPS. Reduced motion mode clam
 
 ---
 
-
 ## E) Empty strip (Session Utility Row)
 
 **Session Utility Row** (always useful, light footprint):

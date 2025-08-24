@@ -31,7 +31,6 @@
 
 - Not formally defined; app is best-effort for end-user experience.
 
-
 ---
 
 [← Back to Documentation Index](./README.md)

@@ -44,7 +44,6 @@
 
 See `docs/security/threat-model.mmd` for diagram.
 
-
 ---
 
 [← Back to Documentation Index](../README.md)

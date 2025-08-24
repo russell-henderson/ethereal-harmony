@@ -35,7 +35,6 @@
 - **WCAG**: Web Content Accessibility Guidelines  
 - **XSS**: Cross-Site Scripting (security threat mitigated via sanitization)
 
-
 ---
 
 [← Back to Documentation Index](./README.md)

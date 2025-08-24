@@ -55,7 +55,6 @@ There is **no backend database**. All data is stored locally in the browser usin
 - No automatic backups.  
 - No sensitive PII stored.
 
-
 ---
 
 [← Back to Documentation Index](./README.md)

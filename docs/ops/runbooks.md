@@ -27,7 +27,6 @@
 - **Dependency Vulnerability:**
   - Run `npm audit` and update as needed.
 
-
 ---
 
 [← Back to Documentation Index](../README.md)

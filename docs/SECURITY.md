@@ -9,7 +9,6 @@
 
 # 📘 SECURITY.md
 
-
 ## 🪪 Security Documentation
 
 > Part of [Ethereal Harmony Documentation](./README.md)
@@ -49,7 +48,6 @@
 - Risks: malicious metadata in audio tags, unsafe external stream injection.  
 - Mitigations: strict sanitization, URL allowlist, HTTPS enforcement.  
 - No server or multi-user attack surface.
-
 
 ---
 

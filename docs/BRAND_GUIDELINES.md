@@ -88,7 +88,6 @@ box-shadow:
 
 ![Ethereal Harmony](https://github.com/russell-henderson/ethereal-harmony/blob/master/docs/images/brand-guidelines.png)
 
-
 ---
 
 ## 5. Iconography

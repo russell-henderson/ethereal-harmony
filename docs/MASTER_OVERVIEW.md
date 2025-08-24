@@ -137,7 +137,6 @@ All services are implemented as frontend modules. There are no backend microserv
 
 - Known gaps, tech debt, ADR links
 
-
 ---
 
 [← Back to Documentation Index](./README.md)

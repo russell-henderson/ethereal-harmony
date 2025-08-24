@@ -13,7 +13,6 @@
 - Consequences: <Positive/negative outcomes>
 - Alternatives considered: <List>
 
-
 ---
 
 [← Back to Documentation Index](../README.md)

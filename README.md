@@ -1,10 +1,10 @@
 
-  - Border radius: 16px  
-  - Backdrop blur: 16px  
-  - Background: `rgba(255, 255, 255, 0.12)`  
-  - Border: `1px solid rgba(255, 255, 255, 0.25)`
-  - Enhanced shadows: `0 2px 8px rgba(0, 0, 0, 0.2)`
-  - Glass opacity: `0.75` for authentic glassmorphism
+- Border radius: 16px  
+- Backdrop blur: 16px  
+- Background: `rgba(255, 255, 255, 0.12)`  
+- Border: `1px solid rgba(255, 255, 255, 0.25)`
+- Enhanced shadows: `0 2px 8px rgba(0, 0, 0, 0.2)`
+- Glass opacity: `0.75` for authentic glassmorphism
 ...
 
 ## 🆕 Recent Updates (Latest)

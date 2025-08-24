@@ -55,7 +55,6 @@ Defines repo workflow, branching, commits, CI/CD, and release strategy.
   - “What’s New” modal JSON updated.
   - Publish build artifact (PWA bundle).
 
-
 ---
 
 [← Back to Documentation Index](./README.md)

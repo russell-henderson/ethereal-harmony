@@ -164,7 +164,6 @@
 
 > This checklist aligns with the locked blueprint and build plan. Checking every box yields a V1 that meets the performance, accessibility, privacy, and feature targets we set.
 
-
 ---
 
 [← Back to Documentation Index](./README.md)

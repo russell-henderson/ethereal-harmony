@@ -32,7 +32,6 @@
 
 - Not applicable (static SPA, no backend).
 
-
 ---
 
 [← Back to Documentation Index](./README.md)

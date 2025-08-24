@@ -575,7 +575,6 @@ Generate a Docusaurus (or MkDocs) doc site from /docs, with sidebar/nav and a la
 * Prefer references to code paths and config over prose. Let the code speak and docs point.
 * Keep docs living: wire CI to regenerate artifacts (SBOM, coverage, deps) periodically.
 
-
 ---
 
 [← Back to Documentation Index](./README.md)

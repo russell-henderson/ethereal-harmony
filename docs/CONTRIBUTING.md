@@ -19,7 +19,6 @@
 
 ## DCO/CLA
 
-
 ---
 
 [← Back to Documentation Index](./README.md)

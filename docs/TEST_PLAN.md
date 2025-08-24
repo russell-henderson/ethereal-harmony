@@ -50,7 +50,6 @@ This document defines the QA framework for Ethereal Harmony.
 - No critical accessibility violations.
 - Perf budget maintained (<2s cold start, sustained FPS).
 
-
 ---
 
 [← Back to Documentation Index](./README.md)

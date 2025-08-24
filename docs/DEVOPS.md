@@ -17,7 +17,6 @@
 
 ## Config/Secret Management
 
-
 ---
 
 [← Back to Documentation Index](./README.md)
