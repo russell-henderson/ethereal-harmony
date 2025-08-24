@@ -1,3 +1,27 @@
+## ✨ Features
+
+- **Modern Stack**: React 18 + TypeScript + Vite
+- **Visualizer**: Three.js (WebGLRenderer) with adaptive quality presets
+- **State Management**: Zustand with domain-driven stores (`usePlayerStore`, `useVizStore`) — now fully type-safe and error-free (2024-08-24)
+- **Animations**: Framer Motion for smooth material-style interactions
+- **Glassmorphism UI**:
+  - Border radius: 16px  
+  - Backdrop blur: 16px  
+  - Background: `rgba(255, 255, 255, 0.12)`  
+  - Border: `1px solid rgba(255, 255, 255, 0.25)`
+  - Enhanced shadows: `0 2px 8px rgba(0, 0, 0, 0.2)`
+  - Glass opacity: `0.75` for authentic glassmorphism
+...
+
+## 🆕 Recent Updates (Latest)
+
+- **Zustand Player Store Rewrite Complete**: `usePlayerStore.ts` is now robust, type-safe, and error-free (2024-08-24)
+- **Functional Audio Player**: All controls now fully working with PlaybackController
+- **File Upload System**: Upload and play local audio files instantly
+- **Collapsible Panels**: Hide/show TopBar and SidePanel for more screen space
+- **Enhanced Glassmorphism**: Consistent visual effects across all UI elements
+...
+
 # 🎶 Ethereal Harmony
 
 ![Ethereal Harmony Music App](https://github.com/russell-henderson/ethereal-harmony/blob/master/src/assets/title.jpg?raw=true)

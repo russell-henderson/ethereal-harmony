@@ -1,3 +1,12 @@
+> Part of [Ethereal Harmony Documentation](../README.md)
+
+**Quick Links**  
+**Core**: [Overview](../MASTER_OVERVIEW.md) · [Roadmap](../ROADMAP.md) · [Brand](../BRAND_GUIDELINES.md) · [Glossary](../GLOSSARY.md)  
+**Architecture**: [Frontend](../FRONTEND.md) · [Backend](../BACKEND.md) · [DevOps](../DEVOPS.md) · [Database](../DATABASE.md) · [API Ref](../API_REFERENCE.md)  
+**Quality**: [Accessibility](../ACCESSIBILITY.md) · [Security (root)](../SECURITY.md) · [Performance](../PERFORMANCE.md) · [Observability](../OBSERVABILITY.md) · [Test Plan](../TEST_PLAN.md) · [Workflows](../WORKFLOWS.md)  
+**This Folder**: [Threat Model](./threat-model.md) · [Security Review](./security-review.md)  
+**Deep Links**: [ADRs](../ADR) · [Diagrams](../diagrams) · [Ops/Runbooks](../ops) · [Reports](../reports)
+
 # Security Review
 
 ## Auth Mechanisms
@@ -34,3 +43,8 @@
 ---
 
 See `docs/security/threat-model.mmd` for diagram.
+
+
+---
+
+[← Back to Documentation Index](../README.md)

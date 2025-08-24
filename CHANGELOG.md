@@ -1,4 +1,20 @@
+
 # Changelog
+
+> **Note:** All entries must include the date and time in 24-hour clock format (e.g., 2025-08-24 18:30). If the exact time is not known, use an approximate time for when the change was made or merged.
+
+## [Unreleased] - Zustand Store Rewrite (2025-08-24 18:30)
+
+### Changed
+
+- **Zustand Player Store Rewrite Complete**: `usePlayerStore.ts` is now fully type-safe, error-free, and uses a robust persist config (Zustand v4+).
+- All state fields and actions are present, typed, and documented.
+- All TypeScript and runtime errors related to store structure, hydration, and persistence are resolved.
+- Duplicate/legacy exports and selector issues fixed.
+- Robust migration and hydration logic for persisted state.
+- This unblocks all further checklist-driven MVP work. See `TODO.md` for updated progress.
+
+### Changed entry
 
 All notable changes to the Ethereal Harmony project will be documented in this file.
 

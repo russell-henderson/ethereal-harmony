@@ -1,0 +1,65 @@
+/* MenuBar.module.css */
+.eh-menubar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 100%;
+  background: none;
+  position: relative;
+  z-index: 20;
+}
+.eh-menu {
+  position: relative;
+  display: block;
+  /* Block-level so menu items are horizontal in the flex menubar */
+}
+.eh-menu__trigger {
+  background: none;
+  border: none;
+  color: var(--eh-text, #fff);
+  font-size: 15px;
+  font-family: inherit;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  transition: background 0.15s;
+  outline: none;
+}
+.eh-menu__trigger:focus,
+.eh-menu__trigger[aria-expanded="true"] {
+  background: rgba(0,240,255,0.12);
+  color: var(--eh-aqua, #00F0FF);
+}
+.eh-menu__list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 180px;
+  background: rgba(24,36,56,0.98);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  border-radius: 0 0 8px 8px;
+  padding: 6px 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.eh-menu__item {
+  background: none;
+  border: none;
+  color: var(--eh-text, #fff);
+  font-size: 15px;
+  font-family: inherit;
+  padding: 6px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+.eh-menu__item:focus,
+.eh-menu__item:hover {
+  background: rgba(0,240,255,0.10);
+  color: var(--eh-aqua, #00F0FF);
+}

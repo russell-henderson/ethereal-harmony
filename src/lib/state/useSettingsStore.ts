@@ -69,7 +69,9 @@ export interface SettingsState {
   hotkeysEnabled: boolean;
   showStats: boolean;
 
-  // Ephemeral (not persisted)
+  // Search (ephemeral, not persisted)
+  searchQuery: string;
+  setSearchQuery: (q: string) => void;
   hasHydrated: boolean;
 
   // Actions
@@ -91,9 +93,6 @@ export interface SettingsState {
   setShowStats: (on: boolean) => void; // dispatches "eh:viz:stats"
 }
 
-/* ----------------------------------------------------------------------------
- * Constants & Utilities
- * ------------------------------------------------------------------------- */
 
 const STORAGE_KEY = "eh-settings-v3";
 const STORAGE_VERSION = 3;
@@ -159,7 +158,9 @@ const DEFAULTS: Omit<SettingsState, keyof SettingsState & string> & SettingsStat
 
   showStats: false,
 
+  searchQuery: "",
   hasHydrated: false,
+  setSearchQuery: () => {},
 
   // Actions (filled in create)
   setTheme: () => {},
@@ -182,116 +183,56 @@ const DEFAULTS: Omit<SettingsState, keyof SettingsState & string> & SettingsStat
  *                       hotkeysEnabled, showStats
  * ------------------------------------------------------------------------- */
 
-function migrate(persisted: unknown, fromVersion: number): SettingsState {
-  // Always layer onto defaults to ensure missing keys are populated.
-  const base: SettingsState = { ...DEFAULTS };
-
-  if (!persisted || typeof persisted !== "object") {
-    return base;
-  }
-  const s = persisted as Partial<Record<keyof SettingsState, any>> & Record<string, any>;
-
-  if (fromVersion <= 1) {
-    // Early builds used "mode" and "route"
-    const theme = typeof s.theme === "string" ? s.theme : typeof s.mode === "string" ? s.mode : undefined;
-    const view = typeof s.view === "string" ? s.view : typeof s.route === "string" ? s.route : undefined;
-
-    base.theme = normalizeTheme(theme);
-    base.view = normalizeView(view);
-    if (typeof s.reducedMotion === "boolean") base.reducedMotion = s.reducedMotion;
-
-    // v3 additions fallback to defaults
-    return base;
-  }
-
-  if (fromVersion === 2) {
-    // v2 → v3: copy forward known keys, add new settings with defaults.
-    if (typeof s.theme === "string") base.theme = normalizeTheme(s.theme);
-    if (typeof s.view === "string") base.view = normalizeView(s.view);
-    if (typeof s.reducedMotion === "boolean") base.reducedMotion = s.reducedMotion;
-
-    // New in v3 — safely normalize if present (e.g., from pre-release builds)
-    if (typeof s.vizPreset === "string") base.vizPreset = normalizePreset(s.vizPreset);
-    if (typeof s.hdrEnabled === "boolean") base.hdrEnabled = s.hdrEnabled;
-    if (typeof s.dimmerEnabled === "boolean") base.dimmerEnabled = s.dimmerEnabled;
-    if (typeof s.dimmerStrength === "number") base.dimmerStrength = clamp01(s.dimmerStrength);
-    if (typeof s.hotkeysEnabled === "boolean") base.hotkeysEnabled = s.hotkeysEnabled;
-    if (typeof s.showStats === "boolean") base.showStats = s.showStats;
-
-    return base;
-  }
-
-  // Future: copy recognized keys; unknowns are discarded
-  if (typeof s.theme === "string") base.theme = normalizeTheme(s.theme);
-  if (typeof s.view === "string") base.view = normalizeView(s.view);
-  if (typeof s.reducedMotion === "boolean") base.reducedMotion = s.reducedMotion;
-
-  if (typeof s.vizPreset === "string") base.vizPreset = normalizePreset(s.vizPreset);
-  if (typeof s.hdrEnabled === "boolean") base.hdrEnabled = s.hdrEnabled;
-  if (typeof s.dimmerEnabled === "boolean") base.dimmerEnabled = s.dimmerEnabled;
-  if (typeof s.dimmerStrength === "number") base.dimmerStrength = clamp01(s.dimmerStrength);
-  if (typeof s.hotkeysEnabled === "boolean") base.hotkeysEnabled = s.hotkeysEnabled;
-  if (typeof s.showStats === "boolean") base.showStats = s.showStats;
-
-  return base;
-}
 
 /* ----------------------------------------------------------------------------
  * Store
  * ------------------------------------------------------------------------- */
 
-export const useSettingsStore = create<SettingsState>()(
+export const useSettingsStore = create(
   persist(
     (set, get) => ({
-      ...DEFAULTS,
-
-      // THEME
-      setTheme: (mode) => {
+      theme: DEFAULTS.theme,
+      view: DEFAULTS.view,
+      reducedMotion: DEFAULTS.reducedMotion,
+      vizPreset: DEFAULTS.vizPreset,
+      hdrEnabled: DEFAULTS.hdrEnabled,
+      dimmerEnabled: DEFAULTS.dimmerEnabled,
+      dimmerStrength: DEFAULTS.dimmerStrength,
+      hotkeysEnabled: DEFAULTS.hotkeysEnabled,
+      showStats: DEFAULTS.showStats,
+      searchQuery: DEFAULTS.searchQuery,
+      hasHydrated: DEFAULTS.hasHydrated,
+      setSearchQuery: (q: string) => set({ searchQuery: q }),
+      setTheme: (mode: ThemeMode) => {
         const next = normalizeTheme(mode);
         if (next === get().theme) return;
         set({ theme: next });
-        // Keep DOM in sync immediately
         applyThemeClass(next);
       },
-      toggleTheme: () => {
+      toggleTheme: (): void => {
         const curr = get().theme;
         const next: ThemeMode = curr === "dark" ? "system" : "dark";
         set({ theme: next });
         applyThemeClass(next);
       },
-
-      // VIEW (store-driven simple router)
-      setView: (view) => {
+      setView: (view: AppView): void => {
         const v = normalizeView(view);
         if (v !== get().view) set({ view: v });
       },
-
-      // REDUCED MOTION
-      setReducedMotion: (v) => {
+      setReducedMotion: (v: boolean | undefined): void => {
         if (typeof v === "boolean" || typeof v === "undefined") {
           set({ reducedMotion: v });
         }
       },
-
-      // VISUALIZER PRESET
-      setVizPreset: (id) => set({ vizPreset: normalizePreset(id) }),
-
-      // HDR TOGGLE
-      setHdrEnabled: (on) => set({ hdrEnabled: !!on }),
-
-      // DIMMER
-      setDimmerEnabled: (on) => set({ dimmerEnabled: !!on }),
-      setDimmerStrength: (v) => set({ dimmerStrength: clamp01(v) }),
-
-      // HOTKEYS
-      setHotkeysEnabled: (on) => set({ hotkeysEnabled: !!on }),
-
-      // PERF/DEV STATS
-      setShowStats: (on) => {
+      setVizPreset: (id: VizPresetId): void => set({ vizPreset: normalizePreset(id) }),
+      setHdrEnabled: (on: boolean): void => set({ hdrEnabled: !!on }),
+      setDimmerEnabled: (on: boolean): void => set({ dimmerEnabled: !!on }),
+      setDimmerStrength: (v: number): void => set({ dimmerStrength: clamp01(v) }),
+      setHotkeysEnabled: (on: boolean): void => set({ hotkeysEnabled: !!on }),
+      setShowStats: (on: boolean): void => {
         const enabled = !!on;
         if (enabled === get().showStats) return;
         set({ showStats: enabled });
-        // Notify non-React listeners (PerfOverlayMount can also subscribe)
         dispatchStatsEvent(enabled);
       },
     }),
@@ -309,17 +250,44 @@ export const useSettingsStore = create<SettingsState>()(
         vizPreset: s.vizPreset,
         hdrEnabled: s.hdrEnabled,
         dimmerEnabled: s.dimmerEnabled,
-        dimmerStrength: clamp01(s.dimmerStrength),
+  dimmerStrength: clamp01(s.dimmerStrength ?? DEFAULTS.dimmerStrength),
 
         hotkeysEnabled: s.hotkeysEnabled,
         showStats: s.showStats,
       }),
 
-      migrate,
+      migrate: (persisted: unknown, _version: number): SettingsState => {
+        const p = (typeof persisted === 'object' && persisted !== null) ? persisted as Record<string, unknown> : {};
+        return {
+          ...DEFAULTS,
+          theme: typeof p.theme === 'string' ? normalizeTheme(p.theme) : DEFAULTS.theme,
+          view: typeof p.view === 'string' ? normalizeView(p.view) : DEFAULTS.view,
+          reducedMotion: typeof p.reducedMotion === 'boolean' ? p.reducedMotion as boolean : DEFAULTS.reducedMotion,
+          vizPreset: typeof p.vizPreset === 'string' ? normalizePreset(p.vizPreset) : DEFAULTS.vizPreset,
+          hdrEnabled: typeof p.hdrEnabled === 'boolean' ? p.hdrEnabled as boolean : DEFAULTS.hdrEnabled,
+          dimmerEnabled: typeof p.dimmerEnabled === 'boolean' ? p.dimmerEnabled as boolean : DEFAULTS.dimmerEnabled,
+          dimmerStrength: typeof p.dimmerStrength === 'number' ? clamp01(p.dimmerStrength as number) : DEFAULTS.dimmerStrength,
+          hotkeysEnabled: typeof p.hotkeysEnabled === 'boolean' ? p.hotkeysEnabled as boolean : DEFAULTS.hotkeysEnabled,
+          showStats: typeof p.showStats === 'boolean' ? p.showStats as boolean : DEFAULTS.showStats,
+          searchQuery: typeof p.searchQuery === 'string' ? p.searchQuery as string : DEFAULTS.searchQuery,
+          hasHydrated: false,
+          setSearchQuery: DEFAULTS.setSearchQuery,
+          setTheme: DEFAULTS.setTheme,
+          toggleTheme: DEFAULTS.toggleTheme,
+          setView: DEFAULTS.setView,
+          setReducedMotion: DEFAULTS.setReducedMotion,
+          setVizPreset: DEFAULTS.setVizPreset,
+          setHdrEnabled: DEFAULTS.setHdrEnabled,
+          setDimmerEnabled: DEFAULTS.setDimmerEnabled,
+          setDimmerStrength: DEFAULTS.setDimmerStrength,
+          setHotkeysEnabled: DEFAULTS.setHotkeysEnabled,
+          setShowStats: DEFAULTS.setShowStats,
+        };
+      },
 
       // Hydration lifecycle to prevent "couldn't be migrated" warnings
       // and to run DOM side-effects (theme classes) once data is ready.
-      onRehydrateStorage: () => (state, error) => {
+      onRehydrateStorage: () => (state?: Partial<SettingsState>, error?: unknown, _?: unknown, api?: { setState: (state: SettingsState) => void }) => {
         // If error, keep defaults but still mark hydrated to unblock UI.
         if (error) {
           console.warn("[useSettingsStore] Rehydrate error:", error);
@@ -330,25 +298,37 @@ export const useSettingsStore = create<SettingsState>()(
         applyThemeClass(mode);
 
         // Guard against missing or out-of-range values from older caches
-        const next: Partial<SettingsState> = {
+        const hydrated: SettingsState = {
+          ...DEFAULTS,
           hasHydrated: true,
           theme: mode,
           view: normalizeView(state?.view),
           reducedMotion:
             typeof state?.reducedMotion === "boolean" ? state?.reducedMotion : undefined,
-
           vizPreset: normalizePreset(state?.vizPreset),
-          hdrEnabled: !!state?.hdrEnabled,
-          dimmerEnabled: !!state?.dimmerEnabled,
-          dimmerStrength: clamp01(state?.dimmerStrength ?? DEFAULTS.dimmerStrength),
-
-          hotkeysEnabled: state?.hotkeysEnabled ?? DEFAULTS.hotkeysEnabled,
-          showStats: !!state?.showStats,
+          hdrEnabled: typeof state?.hdrEnabled === "boolean" ? state.hdrEnabled : DEFAULTS.hdrEnabled,
+          dimmerEnabled: typeof state?.dimmerEnabled === "boolean" ? state.dimmerEnabled : DEFAULTS.dimmerEnabled,
+          dimmerStrength: typeof state?.dimmerStrength === "number" ? clamp01(state.dimmerStrength) : DEFAULTS.dimmerStrength,
+          hotkeysEnabled: typeof state?.hotkeysEnabled === "boolean" ? state.hotkeysEnabled : DEFAULTS.hotkeysEnabled,
+          showStats: typeof state?.showStats === "boolean" ? state.showStats : DEFAULTS.showStats,
+          searchQuery: typeof state?.searchQuery === "string" ? state.searchQuery : DEFAULTS.searchQuery,
+          setSearchQuery: DEFAULTS.setSearchQuery,
+          setTheme: DEFAULTS.setTheme,
+          toggleTheme: DEFAULTS.toggleTheme,
+          setView: DEFAULTS.setView,
+          setReducedMotion: DEFAULTS.setReducedMotion,
+          setVizPreset: DEFAULTS.setVizPreset,
+          setHdrEnabled: DEFAULTS.setHdrEnabled,
+          setDimmerEnabled: DEFAULTS.setDimmerEnabled,
+          setDimmerStrength: DEFAULTS.setDimmerStrength,
+          setHotkeysEnabled: DEFAULTS.setHotkeysEnabled,
+          setShowStats: DEFAULTS.setShowStats,
         };
 
-        // Apply the sanitized snapshot
-        useSettingsStore.setState(next, false, "rehydrate:settings");
-      },
+        if (api && typeof api.setState === 'function') {
+          api.setState(hydrated);
+        }
+      }
     }
   )
 );
@@ -383,21 +363,22 @@ export const selectDimmerStrength = (s: SettingsState) => s.dimmerStrength;
 export const selectHotkeysEnabled = (s: SettingsState) => s.hotkeysEnabled;
 export const selectShowStats = (s: SettingsState) => s.showStats;
 
+
 /* ----------------------------------------------------------------------------
  * Imperative helpers (non-hook usage)
  * ------------------------------------------------------------------------- */
 
-export const setView = (view: AppView) => useSettingsStore.getState().setView(view);
-export const setTheme = (mode: ThemeMode) => useSettingsStore.getState().setTheme(mode);
+export const setView = (view: AppView) => useSettingsStore.getState().setView?.(view);
+export const setTheme = (mode: ThemeMode) => useSettingsStore.getState().setTheme?.(mode);
 export const setReducedMotion = (v: boolean | undefined) =>
-  useSettingsStore.getState().setReducedMotion(v);
+  useSettingsStore.getState().setReducedMotion?.(v);
 
-export const setVizPreset = (id: VizPresetId) => useSettingsStore.getState().setVizPreset(id);
-export const setHdrEnabled = (on: boolean) => useSettingsStore.getState().setHdrEnabled(on);
+export const setVizPreset = (id: VizPresetId) => useSettingsStore.getState().setVizPreset?.(id);
+export const setHdrEnabled = (on: boolean) => useSettingsStore.getState().setHdrEnabled?.(on);
 
-export const setDimmerEnabled = (on: boolean) => useSettingsStore.getState().setDimmerEnabled(on);
-export const setDimmerStrength = (v: number) => useSettingsStore.getState().setDimmerStrength(v);
+export const setDimmerEnabled = (on: boolean) => useSettingsStore.getState().setDimmerEnabled?.(on);
+export const setDimmerStrength = (v: number) => useSettingsStore.getState().setDimmerStrength?.(v);
 
-export const setHotkeysEnabled = (on: boolean) => useSettingsStore.getState().setHotkeysEnabled(on);
+export const setHotkeysEnabled = (on: boolean) => useSettingsStore.getState().setHotkeysEnabled?.(on);
 
-export const setShowStats = (on: boolean) => useSettingsStore.getState().setShowStats(on);
+export const setShowStats = (on: boolean) => useSettingsStore.getState().setShowStats?.(on);

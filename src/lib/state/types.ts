@@ -17,6 +17,7 @@
  *   because slices are composed gradually and tests sometimes stub them out.
  */
 
+
 /* ----------------------------------------------------------------------------
  * Tracks
  * ------------------------------------------------------------------------- */
@@ -59,7 +60,40 @@ export type Track = {
 
   /** Internal: object URL for local tracks (to revoke on cleanup). */
   _objectUrl?: string;
+  /** Number of times played (for discovery/sorting). */
+  playCount?: number;
+  /** Timestamp when added to library/queue. */
+  addedAt?: number;
 };
+
+export type VizParams = {
+  /** Stable identifier for lists/queue. */
+  id: string;
+  /** Display metadata (may be empty if unknown). */
+  title: string;
+  artist?: string;
+  album?: string;
+  /** Optional artwork URL (object URL or remote), if available. */
+  artworkUrl?: string;
+  /** Playable URL (object URL for local Files, normalized remote URL otherwise). */
+  url: string;
+  /** Duration in seconds (if known). Streams/HLS may leave this undefined. */
+  duration?: number;
+  /** Best-effort MIME hint (e.g., "audio/mpeg", "application/vnd.apple.mpegurl"). */
+  mime?: string;
+  /** True if this is a stream or has no fixed duration (e.g., HLS). */
+  isStream?: boolean;
+  /** Origin of the media (local File or remote). */
+  source: TrackSource;
+  /** Internal: object URL for local tracks (to revoke on cleanup). */
+  _objectUrl?: string;
+  /** Number of times played (for discovery/sorting). */
+  playCount?: number;
+  /** Timestamp when added to library/queue. */
+  addedAt?: number;
+};
+
+// Playlist type for player store
 
 /**
  * Legacy Track shape from prototypes (Phase 0/early Phase 1).
@@ -166,8 +200,11 @@ export type PlayerCoreState = {
   playbackRate: number; // 0.25..4
 };
 
-/** Full player store type (state + actions). */
-export type PlayerStore = PlayerCoreState & PlayerActions;
+/** Full player store type (state + actions + playlists). */
+export type PlayerStore = PlayerCoreState & PlayerActions & {
+  playlists: Playlist[];
+  hasHydrated?: boolean;
+};
 
 /* ----------------------------------------------------------------------------
  * Visualizer store (subset mirror of useVizStore to avoid cross-import cycles)
@@ -177,7 +214,7 @@ export type PlayerStore = PlayerCoreState & PlayerActions;
 export type VizPresetId = "nebula" | "glass-waves" | "strobe-pulse";
 
 /** Curated visualizer parameters sent to Three.js uniforms. */
-export type VizParams = {
+export type VizTrack = {
   intensity: number;     // 0..1
   bloom: number;         // 0..0.5
   motionScale: number;   // 0..1
@@ -199,6 +236,13 @@ export type VizStore = {
 /* ----------------------------------------------------------------------------
  * Settings/navigation (Phase 1 router)
  * ------------------------------------------------------------------------- */
+
+// Playlist type for player store
+export type Playlist = {
+  id: string;
+  name: string;
+  trackIds: string[];
+};
 
 /** App views (mirrors src/app/routes.tsx without importing to avoid cycles). */
 export type AppView = "player" | "settings" | "stream";

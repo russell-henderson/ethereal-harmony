@@ -1,3 +1,11 @@
+> Part of [Ethereal Harmony Documentation](../README.md)
+
+**Quick Links**  
+**Core**: [Overview](../MASTER_OVERVIEW.md) · [Roadmap](../ROADMAP.md)  
+**Architecture**: [Frontend](../FRONTEND.md) · [Backend](../BACKEND.md) · [DevOps](../DEVOPS.md) · [Database](../DATABASE.md) · [API Ref](../API_REFERENCE.md)  
+**Quality**: [Accessibility](../ACCESSIBILITY.md) · [Security](../SECURITY.md) · [Performance](../PERFORMANCE.md) · [Observability](../OBSERVABILITY.md) · [Test Plan](../TEST_PLAN.md)  
+**This Folder**: [Architecture](./architecture-overview.mmd) · [Cross‑Cutting](./cross-cutting-concerns.mmd) · [Deployment](./deployment-topology.mmd) · [Sequence (Auth)](./sequence-auth.mmd) · [Services Context](./services-context.mmd)
+
 flowchart LR
   user((User)) -->|UI| web[Web/App Frontend (React)]
   web --> audio[Audio Engine]
@@ -20,3 +28,8 @@ flowchart LR
   settings -->|Config| viz
   loader -->|File/Stream| source[Audio Source]
   device -->|Output| output[Audio Output]
+
+
+---
+
+[← Back to Documentation Index](../README.md)

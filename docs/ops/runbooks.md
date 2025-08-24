@@ -1,3 +1,9 @@
+> Part of [Ethereal Harmony Documentation](../README.md)
+
+**Quick Links**  
+[Overview](../MASTER_OVERVIEW.md) · [Roadmap](../ROADMAP.md) · [DevOps](../DEVOPS.md) · [Security](../SECURITY.md) · [Observability](../OBSERVABILITY.md) · [Workflows](../WORKFLOWS.md)  
+**This Folder**: [Runbooks](./runbooks.md) · [Backup/Restore](./backup-restore.md) · [SOPS Policy](./sops-policy.md)
+
 # Runbooks
 
 ## Common Operational Tasks
@@ -20,3 +26,8 @@
   - Try clearing LocalStorage and reloading.
 - **Dependency Vulnerability:**
   - Run `npm audit` and update as needed.
+
+
+---
+
+[← Back to Documentation Index](../README.md)

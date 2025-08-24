@@ -1,3 +1,7 @@
+// Polyfill Buffer for music-metadata-browser compatibility
+import { Buffer } from 'buffer';
+// @ts-ignore
+window.Buffer = Buffer;
 // src/index.tsx
 /**
  * Entry point (Vite + React 18)

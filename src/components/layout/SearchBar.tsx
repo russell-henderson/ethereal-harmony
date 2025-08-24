@@ -1,4 +1,5 @@
 import React from "react";
+import { useSettingsStore } from "@/lib/state/useSettingsStore";
 import { AnimatePresence, motion } from "framer-motion";
 import styles from "./SearchBar.module.css";
 import { Icon } from "@/lib/utils/IconRegistry";
@@ -25,7 +26,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   useModalOnSmall = true,
 }) => {
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const [value, setValue] = React.useState("");
+  const searchQuery = useSettingsStore((s) => s.searchQuery || "");
+  const setSearchQuery = useSettingsStore((s) => s.setSearchQuery);
+  const [value, setValue] = React.useState(searchQuery);
   const [isFocused, setIsFocused] = React.useState(false);
   const [isSmall, setIsSmall] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
@@ -36,8 +39,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     const handle = (e: MediaQueryListEvent | MediaQueryList) =>
       setIsSmall("matches" in e ? e.matches : (e as MediaQueryList).matches);
     handle(mql);
-    mql.addEventListener?.("change", handle as any);
-    return () => mql.removeEventListener?.("change", handle as any);
+  mql.addEventListener?.("change", handle);
+  return () => mql.removeEventListener?.("change", handle);
   }, []);
 
   // Ctrl/Cmd+K opens/focuses search
@@ -57,8 +60,17 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     return () => window.removeEventListener("keydown", onKey);
   }, [isSmall, useModalOnSmall]);
 
+  // Debounce search input and update store
+  React.useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearchQuery(value);
+    }, 250);
+    return () => clearTimeout(handler);
+  }, [value, setSearchQuery]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setSearchQuery(value.trim());
     onSubmit?.(value.trim());
   };
 
@@ -71,10 +83,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           className={`${styles.iconBtn} eh-glass`}
           aria-label="Open search"
           aria-haspopup="dialog"
-          aria-expanded={modalOpen}
+          aria-expanded={!!modalOpen}
           onClick={() => setModalOpen(true)}
         >
-          <Icon name="search" aria-hidden="true" />
+          <Icon name="search" aria-hidden={true} />
           <kbd className={styles.kbd}>⌘K</kbd>
         </button>
 
@@ -128,11 +140,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                   }}
                   aria-label="Clear search"
                 >
-                  <Icon name="x" aria-hidden="true" />
+                  <Icon name="x" aria-hidden={true} />
                 </button>
 
                 <button type="submit" className={styles.submitBtn} aria-label="Run search">
-                  <Icon name="enter" aria-hidden="true" />
+                  <Icon name="enter" aria-hidden={true} />
                 </button>
               </form>
 
@@ -148,7 +160,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 onClick={() => setModalOpen(false)}
                 aria-label="Close search"
               >
-                <Icon name="x" aria-hidden="true" />
+                <Icon name="x" aria-hidden={true} />
               </button>
             </motion.dialog>
           )}
@@ -156,6 +168,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       </>
     );
   }
+
+  // Keep input in sync with store (if changed externally)
+  React.useEffect(() => {
+    if (searchQuery !== value) setValue(searchQuery);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
   // Desktop / large layout: compact → expands on focus or when typing
   const expanded = isFocused || value.length > 0;
@@ -206,7 +224,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           aria-disabled={value.length === 0}
           disabled={value.length === 0}
         >
-          <Icon name="x" aria-hidden="true" />
+          <Icon name="x" aria-hidden={true} />
         </button>
         <kbd className={styles.kbd}>⌘K</kbd>
       </div>

@@ -38,8 +38,11 @@ export type UIModal =
   | "stream-wizard"
   | "device-picker";
 
+export type MainView = "library" | "playlists" | "discovery";
+
 export type UIState = {
   // Layout / shells
+  mainView: MainView;
   sidePanelOpen: boolean;     // NEW canonical flag (true = visible)
   /** @deprecated use sidePanelOpen; kept for migration/rare legacy reads */
   sidebarCollapsed?: boolean; // legacy (true = hidden)
@@ -54,6 +57,7 @@ export type UIState = {
   modal: UIModal;
 
   // Actions (canonical)
+  setMainView: (view: MainView) => void;
   setSidePanelOpen: (open: boolean) => void;
   toggleSidePanel: () => void;
 
@@ -91,6 +95,7 @@ const STORAGE_VERSION = 3; // bump: introduce sidePanelOpen canonical
  */
 const DEFAULTS: UIState = {
   sidePanelOpen: false,
+  mainView: "library",
   // legacy shadow value provided for type completeness (not used at runtime)
   sidebarCollapsed: undefined,
 
@@ -100,6 +105,7 @@ const DEFAULTS: UIState = {
   modal: "none",
 
   // Filled by store initializer
+  setMainView: () => {},
   setSidePanelOpen: () => {},
   toggleSidePanel: () => {},
   setControlsPinned: () => {},
@@ -171,7 +177,8 @@ export const useUIStore = create<UIState>()(
     (set, get) => ({
       ...DEFAULTS,
 
-      // Canonical actions
+  // Canonical actions
+  setMainView: (view) => set({ mainView: view }),
       setSidePanelOpen: (open) => set({ sidePanelOpen: !!open }),
       toggleSidePanel: () => set({ sidePanelOpen: !get().sidePanelOpen }),
 

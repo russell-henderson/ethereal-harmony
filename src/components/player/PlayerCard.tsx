@@ -26,6 +26,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import playbackController from "@/lib/audio/PlaybackController";
 import { Icon } from "@/lib/utils/IconRegistry";
+import { parseBlob } from "music-metadata-browser";
 
 type TrackMeta = {
   title?: string;
@@ -157,32 +158,45 @@ const PlayerCard: React.FC = () => {
     input.type = 'file';
     input.accept = 'audio/*';
     input.multiple = false;
-    
+
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
         try {
-          // Create a basic track object from the file
-          const newTrack = {
-            title: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension
-            artist: "Uploaded Track",
-            album: "Local Files",
-            artworkUrl: undefined
-          };
-          
-          // Set the track and load it into the player
+          // Extract metadata using music-metadata-browser
+          let title = file.name.replace(/\.[^/.]+$/, "");
+          let artist = "Uploaded Track";
+          let album = "Local Files";
+          let artworkUrl: string | undefined = undefined;
+
+          try {
+            const metadata = await parseBlob(file);
+            if (metadata.common.title) title = metadata.common.title;
+            if (metadata.common.artist) artist = metadata.common.artist;
+            if (metadata.common.album) album = metadata.common.album;
+            if (metadata.common.picture && metadata.common.picture.length > 0) {
+              const pic = metadata.common.picture[0];
+              const blob = new Blob([pic.data], { type: pic.format });
+              artworkUrl = URL.createObjectURL(blob);
+            }
+          } catch (metaErr) {
+            // Fallback to defaults if metadata extraction fails
+            console.warn('Metadata extraction failed:', metaErr);
+          }
+
+          const newTrack = { title, artist, album, artworkUrl };
           setTrack(newTrack);
-          
+
           // Load the audio file into the playback controller using the correct method
           await playbackController.loadFromFile(file, true);
-          
+
         } catch (error) {
           console.error('Error loading audio file:', error);
           alert('Error loading audio file. Please try again.');
         }
       }
     };
-    
+
     input.click();
   };
 
@@ -218,7 +232,7 @@ const PlayerCard: React.FC = () => {
             }}
           >
             {track?.artworkUrl ? (
-              <img src={track.artworkUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <img src={track.artworkUrl} alt="Album artwork" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             ) : (
               <div style={{ 
                 width: "100%", 
@@ -227,9 +241,9 @@ const PlayerCard: React.FC = () => {
                 alignItems: "center", 
                 justifyContent: "center",
                 color: "rgba(255,255,255,0.3)",
-                fontSize: "12px"
+                fontSize: "24px"
               }}>
-                No Art
+                ♪
               </div>
             )}
           </div>
@@ -252,6 +266,9 @@ const PlayerCard: React.FC = () => {
               width: "100%"
             }}>
               {track?.artist || "Unknown Artist"}
+              {track?.album ? (
+                <div style={{ fontSize: "12px", color: "var(--eh-text-muted)" }}>{track.album}</div>
+              ) : null}
             </div>
           </div>
         </div>

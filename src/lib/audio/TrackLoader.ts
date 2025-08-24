@@ -1,19 +1,6 @@
 // src/lib/audio/TrackLoader.ts
-/**
- * TrackLoader (Phase 2)
- * -----------------------------------------------------------------------------
- * Single-purpose helpers to create a playable Track object from:
- *  - a local File (File System / file input)
- *  - a remote URL (HLS or direct audio)
- *
- * Design:
- *  - No framework/runtime coupling; safe to import anywhere.
- *  - Produces a normalized `Track` record your store/UI can consume.
- *  - For local files, creates an object URL and exposes a `revokeTrackResources`
- *    helper to free it when no longer needed.
- *  - For remote URLs, normalizes scheme and optionally resolves duration by
- *    loading metadata off-DOM (best-effort with timeout).
- */
+
+import { parseBlob } from "music-metadata-browser";
 
 export type Track = {
   /** Stable identifier for UI lists and store */
@@ -148,12 +135,33 @@ export async function loadTrackFromFile(file: File): Promise<Track> {
   // Try best-effort duration for local files too (usually quick)
   const duration = await probeDuration(objectUrl, 4000);
 
+  // Extract metadata using music-metadata-browser
+  let title = sanitizeTitle(file.name);
+  let artist: string | undefined = undefined;
+  let album: string | undefined = undefined;
+  let artworkUrl: string | undefined = undefined;
+  try {
+    const metadata = await parseBlob(file);
+    if (metadata.common) {
+      title = metadata.common.title || title;
+      artist = metadata.common.artist;
+      album = metadata.common.album;
+      if (metadata.common.picture && metadata.common.picture.length > 0) {
+        const pic = metadata.common.picture[0];
+        const blob = new Blob([pic.data], { type: pic.format });
+        artworkUrl = URL.createObjectURL(blob);
+      }
+    }
+  } catch (err) {
+    // ignore metadata errors, fallback to filename
+  }
+
   const track: Track = {
     id: makeId(),
-    title: sanitizeTitle(file.name),
-    artist: undefined,
-    album: undefined,
-    artworkUrl: undefined, // Phase 2: we don't parse embedded art yet
+    title,
+    artist,
+    album,
+    artworkUrl,
     url: objectUrl,
     duration,
     mime: file.type || mimeFromExt(ext),

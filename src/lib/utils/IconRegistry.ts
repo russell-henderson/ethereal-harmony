@@ -7,36 +7,32 @@
 
 import React from "react";
 import {
-  // Core UI
-  Menu,
-  ChevronLeft,
-  ChevronRight,
-  ChevronUp,
-  ChevronDown,
-  Cog,
-  Search,
-  EllipsisVertical,
-  X,
-  User,
-  ArrowRight,
-  Upload,
-  // Player / transport
-  Play,
-  Pause,
-  SkipForward,
-  SkipBack,
-  Repeat,
-  Shuffle,
-  // Volume
-  Volume2,
-  VolumeX,
-  // App / nav metaphors
-  AppWindow,
-  Library as LibraryIcon,
-  ListMusic,
-  Compass,
-  Waves,
-} from "lucide-react";
+  FaBars as Menu,
+  FaChevronLeft as ChevronLeft,
+  FaChevronRight as ChevronRight,
+  FaChevronUp as ChevronUp,
+  FaChevronDown as ChevronDown,
+  FaCog as Cog,
+  FaSearch as Search,
+  FaEllipsisV as EllipsisVertical,
+  FaTimes as X,
+  FaUser as User,
+  FaArrowRight as ArrowRight,
+  FaUpload as Upload,
+  FaPlay as Play,
+  FaPause as Pause,
+  FaForward as SkipForward,
+  FaBackward as SkipBack,
+  FaRedo as Repeat,
+  FaRandom as Shuffle,
+  FaVolumeUp as Volume2,
+  FaVolumeMute as VolumeX,
+  FaWindowMaximize as AppWindow,
+  FaBook as LibraryIcon,
+  FaList as ListMusic,
+  FaCompass as Compass,
+  FaWater as Waves
+} from "react-icons/fa";
 
 /** Canonical (preferred) keys */
 type CanonicalIconName =
@@ -117,6 +113,8 @@ const canonical: Record<CanonicalIconName, React.ComponentType<React.ComponentPr
  * e.g. "transport.play", "volume.on".
  */
 const aliases: Record<string, React.ComponentType<React.ComponentPropsWithoutRef<'svg'>>> = {
+  // Common alias for close/clear
+  x: canonical.close,
   // Transport namespace
   "transport.play": canonical.play,
   "transport.pause": canonical.pause,

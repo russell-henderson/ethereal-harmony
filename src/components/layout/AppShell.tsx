@@ -38,6 +38,10 @@ import SidePanel from "@/components/layout/SidePanel";
 
 // Player surface (main content example — additional views render here)
 import PlayerCard from "@/components/player/PlayerCard";
+import LibraryView from "@/components/LibraryView";
+import PlaylistsView from "@/components/PlaylistsView";
+import DiscoveryView from "@/components/DiscoveryView";
+import { useUIStore } from "@/lib/state/useUIStore";
 
 // Global utilities (mounted once)
 import GlobalHotkeys from "@/components/shortcuts/GlobalHotkeys";
@@ -109,6 +113,7 @@ const styles = {
 };
 
 const AppShell: React.FC = () => {
+  const mainView = useUIStore((s) => s.mainView);
   return (
     <div style={styles.root}>
       {/* ----------------------------------------------------------------------
@@ -159,6 +164,21 @@ const AppShell: React.FC = () => {
 
             {/* Primary view content (Phase 2 shows PlayerCard). Other views will
                mount here based on our store-driven router. */}
+            {mainView === "library" && (
+              <section aria-label="Library list">
+                <LibraryView />
+              </section>
+            )}
+            {mainView === "playlists" && (
+              <section aria-label="Playlists">
+                <PlaylistsView />
+              </section>
+            )}
+            {mainView === "discovery" && (
+              <section aria-label="Discovery">
+                <DiscoveryView />
+              </section>
+            )}
             <section aria-label="Player area">
               <PlayerCard />
             </section>
