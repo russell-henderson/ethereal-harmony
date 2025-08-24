@@ -13,9 +13,9 @@
 **Entrypoints (by language):**
 
 - TypeScript/React SPA:
-	- Main entry: `src/index.tsx` (invoked by Vite)
-	- App root: `src/app/App.tsx`
-	- No backend/server entrypoints detected (frontend-only app)
+ 	- Main entry: `src/index.tsx` (invoked by Vite)
+ 	- App root: `src/app/App.tsx`
+ 	- No backend/server entrypoints detected (frontend-only app)
 
 **Detected Frameworks/Libraries & Versions:**
 
@@ -73,12 +73,15 @@
 ---
 
 ## Stack Summary
+
 - Languages, frameworks, hosting, datastores
 
 ## Key Flows
+
 - Auth, critical user journeys, batch/cron
 
 ## Services
+
 - Table with service name, repo path, owners, SLAs
 
 All services are implemented as frontend modules. There are no backend microservices or external APIs.
@@ -89,25 +92,33 @@ All services are implemented as frontend modules. There are no backend microserv
 - All features are implemented client-side, with the exception of optional HLS streaming via `hls.js` (loaded dynamically for non-Safari browsers).
 
 ## Data
+
 - ERD link, sensitive fields, retention/backup summary
 
 ## APIs
+
 - REST/GraphQL/gRPC overview with links to specs
 
 ## Security & Compliance
+
 - AuthN/Z, threat model summary, compliance notes
 
 ## DevOps
+
 - CI jobs, deploy strategy, environments, feature flags
 
 ## Observability
+
 - Logs/metrics/traces, dashboards, SLOs
 
 ## Testing
+
 - Levels, coverage, gate policies
 
 ## Runbooks & On‑Call
+
 - Links to /docs/ops
 
 ## Roadmap & Risks
+
 - Known gaps, tech debt, ADR links

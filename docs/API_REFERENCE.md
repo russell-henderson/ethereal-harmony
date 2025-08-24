@@ -7,6 +7,7 @@ This project is a frontend-only SPA. There are **no REST, GraphQL, gRPC, WebSock
 ## Internal Module Boundaries
 
 While there is no external API, the codebase is organized into clear internal modules:
+
 - **Audio Engine**: `src/lib/audio/AudioEngine.ts`, `PlaybackController.ts`, `AnalyserBus.ts`
 - **State Stores**: `src/lib/state/usePlayerStore.ts`, `useVizStore.ts`, `useSettingsStore.ts`, `useUIStore.ts`
 - **Visualizer**: `src/lib/visualizer/`, `src/components/visualizer/`

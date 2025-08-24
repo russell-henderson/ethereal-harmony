@@ -5,6 +5,7 @@
 There is no backend server or API in this codebase. All business logic, state management, and orchestration are implemented in the frontend (React + TypeScript). The architecture is modular, with a clear separation of concerns for audio, state, diagnostics, and UI.
 
 **Key Packages:**
+
 - React, Zustand, Three.js, Framer Motion, hls.js (all frontend)
 - No backend or server-side frameworks
 

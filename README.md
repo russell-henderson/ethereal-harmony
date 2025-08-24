@@ -5,8 +5,6 @@
   />
 </picture>
 
-
-
 # 🎶 Ethereal Harmony
 
 A high-performance, immersive web audio player with a real-time, audio-reactive Three.js visualizer and a sleek glassmorphism UI. Built for speed, accessibility, and trust — all data stays local by default.
@@ -35,7 +33,7 @@ A high-performance, immersive web audio player with a real-time, audio-reactive 
   - Local file playback with drag & drop
   - Streaming (HLS with native + `hls.js` fallback)
   - Hardware media key integration (via MediaSession API)
-- **Collapsible Interface**: 
+- **Collapsible Interface**:
   - TopBar with up/down toggle
   - SidePanel with left/right toggle
   - LED light indicator with pulsing animation
@@ -45,12 +43,14 @@ A high-performance, immersive web audio player with a real-time, audio-reactive 
 ## 🆕 Recent Updates (Latest)
 
 ### 🎯 Major New Features
+
 - **Functional Audio Player**: All controls now fully working with PlaybackController
 - **File Upload System**: Upload and play local audio files instantly
 - **Collapsible Panels**: Hide/show TopBar and SidePanel for more screen space
 - **Enhanced Glassmorphism**: Consistent visual effects across all UI elements
 
 ### 🎵 Player Improvements
+
 - **Transport Controls**: Working play/pause, previous/next track buttons
 - **Progress Bar**: Real-time playback progress with seek functionality
 - **Volume System**: Functional volume slider and mute controls
@@ -58,6 +58,7 @@ A high-performance, immersive web audio player with a real-time, audio-reactive 
 - **Time Display**: Current time and duration indicators
 
 ### 🎨 UI Enhancements
+
 - **Layout Refinements**: Better spacing, sizing, and positioning
 - **Navigation Cleanup**: Organized menu structure and search placement
 - **Responsive Design**: Improved mobile and desktop experience
@@ -166,6 +167,7 @@ npm run preview
 ## 🎮 How to Use
 
 ### Audio Player
+
 1. **Upload Audio**: Click the upload button (↑) to select local audio files
 2. **Playback Controls**: Use the large center buttons for play/pause, previous/next
 3. **Progress**: Click/drag on the progress bar to seek through tracks
@@ -173,9 +175,10 @@ npm run preview
 5. **Speed**: Change playback rate with the dropdown selector
 
 ### Interface
+
 - **Hide TopBar**: Click the up carrot (^) in the top-right
 - **Hide SidePanel**: Click the left chevron (←) in the navigation header
-- **Keyboard Shortcuts**: 
+- **Keyboard Shortcuts**:
   - `Ctrl/Cmd + B`: Toggle SidePanel
   - `Escape`: Close SidePanel
 
@@ -206,6 +209,7 @@ npm run preview
 For detailed information about all changes, see [CHANGELOG.md](./CHANGELOG.md).
 
 ### Recent Highlights
+
 - ✅ **Functional Audio Player**: All controls now working
 - ✅ **File Upload System**: Local audio file support
 - ✅ **Collapsible Interface**: Hide/show panels for space

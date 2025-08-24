@@ -8,12 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2025-01-XX
 
 ### 🎯 Major Features Added
+
 - **Collapsible TopBar**: Added up/down carrot buttons to hide/show the top bar
 - **Collapsible SidePanel**: Implemented left/right chevron toggle to hide/show navigation panel
 - **LED Light Indicator**: Restored and enhanced blue LED light circle with pulsing animation
 - **Functional Audio Player**: All player controls now fully functional with PlaybackController integration
 
 ### 🎵 Player Functionality
+
 - **Transport Controls**: Play/pause, previous/next track buttons now control actual audio playback
 - **File Upload**: Upload button allows users to select and load local audio files
 - **Progress Bar**: Real-time playback progress with seek functionality
@@ -22,33 +24,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Time Display**: Shows current time and total duration
 
 ### 🎨 UI/UX Improvements
+
 - **Glassmorphism Enhancement**: Applied consistent glassmorphism effects across all UI elements
   - Subtle drop shadows: `0 2px 8px rgba(0, 0, 0, 0.2)`
   - White stroke borders: `1px solid rgba(255, 255, 255, 0.25)`
   - Reduced opacity: `0.75` for more glass-like appearance
-- **Layout Refinements**: 
+- **Layout Refinements**:
   - SidePanel width reduced to 260px for better spacing
   - Player controls increased by 30% for better usability
   - Album art placeholder increased by 50%
   - Volume slider extended to 200px width
-- **Navigation Cleanup**: 
+- **Navigation Cleanup**:
   - Centered "Navigation" label in SidePanel header
   - Properly positioned search field in dedicated section
   - Clean menu structure for Library, Playlists, Discovery
 
 ### 🏗️ Architecture Improvements
+
 - **State Management**: Fixed undefined function errors in SidePanel and TopBar
 - **Event Handling**: Proper keyboard shortcuts (Ctrl/Cmd+B, Escape) for panel toggles
 - **Component Structure**: Cleaner separation of concerns between layout components
 - **Error Handling**: Added proper error handling for file uploads
 
 ### 🔧 Technical Fixes
+
 - **Vite Configuration**: Resolved module resolution and alias issues
 - **Linter Errors**: Fixed ARIA attribute validation issues
 - **Component Props**: Added missing onClick handlers and event functions
 - **CSS Organization**: Improved styling structure and consistency
 
 ### 📱 Responsive Design
+
 - **Mobile Support**: Enhanced touch interactions for collapsible panels
 - **Breakpoint Handling**: Proper desktop vs mobile behavior for SidePanel
 - **Accessibility**: Maintained ARIA compliance throughout UI changes
@@ -56,12 +62,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Previous Versions]
 
 ### [0.2.0] - 2025-01-XX
+
 - **EQ Integration**: EqPanel wired to AudioEngine.ensureEq()
 - **Device Management**: Consolidated into OutputDeviceManager
 - **Settings Panel**: Centralized HDR, Dimmer, Visualizer preset, and FPS stats
 - **HLS Support**: Added hls.js as dependency, documented Safari vs. Chromium path
 
 ### [0.1.0] - 2025-01-XX
+
 - **Initial Release**: Core audio player with Three.js visualizer
 - **Glassmorphism UI**: Base design system implementation
 - **Audio Engine**: Basic playback functionality
@@ -72,10 +80,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 🚀 How to Use New Features
 
 ### Collapsible Panels
+
 - **TopBar**: Click the up carrot (^) to hide, down carrot (v) to show
 - **SidePanel**: Click the left chevron (←) to hide, right chevron (→) to show
 
 ### Audio Player
+
 - **Upload**: Click upload button to select and load audio files
 - **Playback**: Use transport controls to play/pause and navigate tracks
 - **Seek**: Click/drag on progress bar to jump to specific times
@@ -83,7 +93,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Speed**: Change playback rate with dropdown selector
 
 ### Navigation
-- **Keyboard Shortcuts**: 
+
+- **Keyboard Shortcuts**:
   - `Ctrl/Cmd + B`: Toggle SidePanel
   - `Escape`: Close SidePanel
 - **Search**: Use search fields in both TopBar and SidePanel

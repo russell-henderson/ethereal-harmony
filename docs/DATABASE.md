@@ -3,6 +3,7 @@
 ## Databases Used
 
 There is **no backend database**. All data is stored locally in the browser using:
+
 - LocalStorage (for settings, UI state, and developer toggles)
 - In-memory state (Zustand stores)
 - Audio files are loaded from local disk or streamed (not persisted)

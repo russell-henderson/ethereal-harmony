@@ -1,6 +1,7 @@
 # Runbooks
 
 ## Common Operational Tasks
+
 - **Clear LocalStorage:**
   - Open browser dev tools > Application > LocalStorage > Clear site data.
 - **Reset App State:**
@@ -13,6 +14,7 @@
   - Run `npm run dev` and `npm run test`.
 
 ## Incident Response
+
 - **UI/Playback Bug:**
   - Check browser console for errors.
   - Try clearing LocalStorage and reloading.
