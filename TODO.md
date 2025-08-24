@@ -155,15 +155,18 @@ Toggles produce visible, smooth changes at 55–60 FPS. Reduced motion mode clam
 
 ---
 
-## E) Empty strip (proposal)
 
-**Use this as a **Session Utility Row** (always useful, light footprint):**
+## E) Empty strip (Session Utility Row)
 
-* [ ] Mini now‑playing summary (title • artist • duration), click focuses PlayerCard.
+**Session Utility Row** (always useful, light footprint):
+
+* [x] Mini now‑playing summary (title • artist • duration), click focuses PlayerCard.
 * [ ] **Hotkeys cheat** button (opens a tiny popover).
-* [ ] **Performance chip** (FPS tier Medium/High and live FPS number).
-* [ ] **Queue size chip** (e.g., “Queue: 23” → opens the queue).
+* [x] **Performance chip** (FPS tier Medium/High and live FPS number).
+* [x] **Queue size chip** (e.g., “Queue: 23” → opens the queue).
 * [ ] Phase 1.1: voice search mic button (disabled if mic blocked).
+
+> The mini now-playing summary, FPS chip, and queue size chip are now fully wired to real state and styled via CSS module. All values update live as playback and performance change.
 
 **Acceptance**
 Everything is read‑only except the two buttons; row never steals focus during typing.

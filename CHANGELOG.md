@@ -7,12 +7,6 @@
 
 ### Changed
 
-- **Zustand Player Store Rewrite Complete**: `usePlayerStore.ts` is now fully type-safe, error-free, and uses a robust persist config (Zustand v4+).
-- All state fields and actions are present, typed, and documented.
-- All TypeScript and runtime errors related to store structure, hydration, and persistence are resolved.
-- Duplicate/legacy exports and selector issues fixed.
-- Robust migration and hydration logic for persisted state.
-- This unblocks all further checklist-driven MVP work. See `TODO.md` for updated progress.
 
 ### Changed entry
 
@@ -22,6 +16,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] - 2025-01-XX
+
+### Added
+- Session Utility Row: Added a persistent utility row to the app shell, featuring a mini now-playing summary (title, artist, duration), a live FPS/tier chip, and a queue size chip. All values are wired to real state and update live as playback and performance change. The row is styled using a new CSS module for maintainability and theme consistency.
 
 ### 🎯 Major Features Added
 

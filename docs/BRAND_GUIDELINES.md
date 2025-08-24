@@ -86,14 +86,15 @@ box-shadow:
 
 ---
 
-![Ethereal Harmony Music App](https://github.com/russell-henderson/ethereal-harmony/blob/master/src/docs/images/ui-overview.png?raw=true)
+![Ethereal Harmony](https://github.com/russell-henderson/ethereal-harmony/blob/master/docs/images/brand-guidelines.png)
+
 
 ---
 
 ## 5. Iconography
 
-* **Source:** Central registry (`src/lib/utils/IconRegistry.ts`).
 * **Style:** Simple, 24px line-based icons with clear affordances.
+  
 * **States:** Default (soft lavender/white), hover (radiant aqua), disabled (reduced opacity).
 * **Rules:** No ad-hoc icons; all must be added to the registry for consistency.
 
