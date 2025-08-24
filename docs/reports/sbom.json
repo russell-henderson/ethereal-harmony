@@ -1,0 +1,3 @@
+{
+  "sbom": "Not applicable: no backend, all dependencies are listed in package.json. Use `npm audit` for up-to-date dependency checks."
+}

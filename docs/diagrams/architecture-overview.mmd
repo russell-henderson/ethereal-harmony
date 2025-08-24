@@ -1,0 +1,22 @@
+flowchart LR
+  user((User)) -->|UI| web[Web/App Frontend (React)]
+  web --> audio[Audio Engine]
+  web --> viz[Visualizer (Three.js)]
+  web --> state[State Store (Zustand)]
+  audio --> device[Device Manager]
+  audio --> eq[EQ/FX]
+  audio --> playback[Playback Controller]
+  playback --> loader[Track Loader]
+  web --> settings[Settings Panel]
+  web --> player[Player UI]
+  viz --> canvas[SceneCanvas]
+  viz --> presets[QualityPresets]
+  state --> player
+  state --> settings
+  state --> viz
+  player -->|Controls| playback
+  player -->|Volume| audio
+  settings -->|Config| audio
+  settings -->|Config| viz
+  loader -->|File/Stream| source[Audio Source]
+  device -->|Output| output[Audio Output]

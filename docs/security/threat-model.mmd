@@ -1,0 +1,9 @@
+flowchart TD
+  user((User)) -->|UI| browser[Browser]
+  browser -->|LocalStorage| settings[Settings]
+  browser -->|In-memory| state[State Stores]
+  browser -->|Audio| audio[Audio Engine]
+  browser -->|Visualizer| viz[Visualizer]
+  browser -->|Dependencies| deps[NPM Packages]
+  deps -.->|Supply Chain| threat[Threat]
+  browser -.->|Browser Exploit| threat

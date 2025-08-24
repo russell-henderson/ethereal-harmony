@@ -1,0 +1,10 @@
+flowchart LR
+  settings[Settings Store] -->|Feature Flags| player[Player UI]
+  settings -->|Theme| web[Web Frontend]
+  settings -->|Audio Config| audio[Audio Engine]
+  state[State Store] -->|Playback State| player
+  state -->|Visualizer State| viz[Visualizer]
+  player -->|Error Handling| error[Error Boundary]
+  player -->|Validation| audio
+  viz -->|Performance Metrics| perf[Perf Overlay]
+  web -->|Accessibility| a11y[Accessibility Layer]

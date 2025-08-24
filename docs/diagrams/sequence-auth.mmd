@@ -1,0 +1,18 @@
+sequenceDiagram
+  participant U as User
+  participant FE as Frontend (React)
+  participant AE as Audio Engine
+  participant VZ as Visualizer
+  U->>FE: Load App
+  FE->>AE: Initialize Audio Engine
+  FE->>VZ: Initialize Visualizer
+  U->>FE: Select Track/Stream
+  FE->>AE: Load Track/Stream
+  AE-->>FE: Ready/Playback State
+  FE-->>U: UI Feedback (Ready/Playing)
+  U->>FE: Interact with Controls (Play/Pause/Seek)
+  FE->>AE: Playback Command
+  AE-->>FE: Playback State Update
+  FE->>VZ: Update Visualization
+  VZ-->>FE: Rendered Frame
+  FE-->>U: Visual Feedback

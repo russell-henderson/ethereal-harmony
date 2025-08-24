@@ -1,0 +1,12 @@
+flowchart TD
+  user((User))
+  user --> web[Web Frontend (SPA)]
+  web --> audio[Audio Engine]
+  web --> viz[Visualizer]
+  web --> state[State Store]
+  audio --> device[Device Manager]
+  audio --> eq[EQ]
+  audio --> playback[Playback Controller]
+  playback --> loader[Track Loader]
+  loader --> source[Audio File/Stream]
+  device --> output[Audio Output]

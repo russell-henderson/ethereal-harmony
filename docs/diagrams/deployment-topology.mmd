@@ -1,0 +1,6 @@
+flowchart TD
+  user((User))
+  user --> cdn[CDN/Static Hosting]
+  cdn --> web[Web Frontend (SPA)]
+  web --> browser[Browser Audio/Media APIs]
+  web --> browser[WebGL/Canvas]
