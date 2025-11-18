@@ -40,13 +40,57 @@ Owner: Russell Henderson
 
 ## Key Components
 
-- `AppShell`: Layout scaffold, global utilities, visualizer canvas, navigation, and main content.
-- `AppChrome`: Header/footer chrome, quick actions, focus management, a11y.
-- `PlayerCard`, `TransportBar`, `Timeline`, `TrackInfo`: Player UI.
-- `VisualizerControls`, `SceneCanvas`, `PresetSelector`: Visualizer UI.
-- `SettingsPanel`, `AudioDevicePicker`, `EqPanel`: Settings.
-- `GlobalHotkeys`, `MediaKeyBridge`: Keyboard and hardware media key support.
-- `ErrorBoundary`, `Toasts`: Error and feedback handling.
+### Layout Components
+
+- `AppShell`: Main layout scaffold with:
+  - Fixed background WebGL canvas (visualizer)
+  - Top bar (`TopBar`) with menu, search, and profile/settings
+  - Visualizer toolbar (`VisualizerToolbar`) with preset, HDR, and dimmer controls
+  - Content grid with side panel (`SidePanel`) and main content area
+  - Fixed bottom player bar (`BottomPlayerBar`)
+- `TopBar`: Global header with menu bar, search, and user actions
+- `SidePanel`: Left navigation panel with Library, Playlists, Discovery views
+- `VisualizerToolbar`: Dedicated visualizer controls strip under top bar
+- `SplitPane`: Reusable split-pane layout (left list, right detail) used by views
+- `EmptyState`: Reusable empty state component for lists and detail panes
+
+### Player Components
+
+- `BottomPlayerBar`: Persistent bottom player bar with:
+  - Volume control (left)
+  - Now playing info with album art and progress bar (center-left)
+  - Playback transport controls (center)
+  - Upload button (center-right)
+  - Time display and playback speed selector (right)
+- `PlayerCard`: Legacy player card (hidden, replaced by BottomPlayerBar)
+- `TransportBar`: Time readout component
+- `PlaybackButtons`: Transport control buttons (prev, play/pause, next)
+- `VolumeSlider`: Volume control with mute toggle
+
+### View Components
+
+- `LibraryView`: Main library view with split-pane layout (track list + detail)
+- `PlaylistsView`: Playlist management with split-pane layout
+- `DiscoveryView`: Discovery view with split-pane layout (categories + track list + detail)
+- `TrackList`: Virtualized track list component
+
+### Visualizer Components
+
+- `SceneCanvas`: WebGL renderer wrapper for Three.js visualizer
+- `VisualizerToolbar`: Quick controls for preset, HDR, dimmer
+- `PresetSelector`, `HdrToggle`, `DimmerToggle`: Individual visualizer controls
+
+### Settings Components
+
+- `SettingsPanel`: Unified settings panel (compact toolbar or full mode)
+- `AudioDevicePicker`: Output device selector
+- `EqPanel`: Equalizer controls
+
+### Utility Components
+
+- `GlobalHotkeys`: Keyboard shortcuts handler
+- `MediaKeyBridge`: Hardware media keys support
+- `ErrorBoundary`, `Toasts`: Error and feedback handling
 
 ## Styling Approach
 

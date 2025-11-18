@@ -188,6 +188,7 @@ All stores are located in `src/lib/state/`:
 - `sidePanelOpen: boolean` - Side panel visibility
 - `controlsPinned: boolean` - Controls rail pinned state
 - `topBarHeight: number` - Measured top bar height (ephemeral)
+- `splitPaneLayout?: { leftPaneWidth: string }` - Split pane layout settings (optional, persisted)
 - `showFps: boolean` - FPS overlay visible
 - `modal: "none" | "hotkeys" | "about" | "stream-wizard" | "device-picker"` - Active modal
 
@@ -198,6 +199,7 @@ All stores are located in `src/lib/state/`:
 - `setControlsPinned(v)` - Pin/unpin controls rail
 - `toggleControlsPinned()` - Toggle controls pinning
 - `setTopBarHeight(px)` - Update measured height (clamped 32..128px)
+- `setSplitPaneLayout(layout)` - Update split pane layout settings
 - `setShowFps(v)` - Show/hide FPS overlay
 - `toggleFps()` - Toggle FPS overlay
 - `openModal(modal)` - Open a modal
@@ -205,7 +207,7 @@ All stores are located in `src/lib/state/`:
 - `resetEphemeral()` - Reset non-persisted state
 
 **Persistence:**
-- Persists: `sidePanelOpen`, `controlsPinned`, `showFps`
+- Persists: `sidePanelOpen`, `controlsPinned`, `splitPaneLayout`, `showFps`
 - Does NOT persist: `modal`, `topBarHeight` (ephemeral)
 
 **Selectors:**

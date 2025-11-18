@@ -38,6 +38,7 @@ import SidePanel from "@/components/layout/SidePanel";
 
 // Player surface (main content example — additional views render here)
 import PlayerCard from "@/components/player/PlayerCard";
+import BottomPlayerBar from "@/components/player/BottomPlayerBar";
 import LibraryView from "@/components/LibraryView";
 import PlaylistsView from "@/components/PlaylistsView";
 import DiscoveryView from "@/components/DiscoveryView";
@@ -53,6 +54,8 @@ import SceneCanvas from "@/components/visualizer/SceneCanvas";
 
 // Settings rail (compact) — hosts preset/HDR/Dimmer controls
 import SettingsPanel from "@/components/settings/SettingsPanel";
+// Visualizer toolbar — dedicated controls strip under top bar
+import VisualizerToolbar from "@/components/visualizer/VisualizerToolbar";
 
 /**
  * Inline, token-driven styles for the top-level shell. We keep these minimal to
@@ -79,7 +82,7 @@ const styles = {
     position: "relative" as const,
     zIndex: 1, // above canvas
     display: "grid",
-    gridTemplateRows: "var(--eh-topbar-h) 1fr", // header + content
+    gridTemplateRows: "var(--eh-topbar-h) auto 1fr", // header + toolbar + content
     minHeight: "100vh",
   },
 
@@ -87,9 +90,10 @@ const styles = {
   contentGrid: {
     display: "grid",
     gridTemplateColumns: "var(--eh-sidepanel-w) 1fr",
-    minHeight: "calc(100vh - var(--eh-topbar-h))",
+    minHeight: "calc(100vh - var(--eh-topbar-h) - var(--eh-visualizer-toolbar-h) - var(--eh-bottom-bar-h))",
     gap: "var(--eh-component-gap)",
     padding: "var(--eh-component-gap)",
+    paddingBottom: "calc(var(--eh-component-gap) + var(--eh-bottom-bar-h))",
   } as React.CSSProperties,
 
   aside: {
@@ -141,6 +145,9 @@ const AppShell: React.FC = () => {
         {/* Header / Top bar (role="banner" is inside TopBar) */}
         <TopBar />
 
+        {/* Visualizer toolbar — dedicated controls strip under top bar */}
+        <VisualizerToolbar />
+
         {/* Content grid: left navigation + main content */}
         <div style={styles.contentGrid}>
           {/* Left navigation / app rail */}
@@ -150,18 +157,6 @@ const AppShell: React.FC = () => {
 
           {/* Main column / route host */}
           <main id="main-content" role="main" style={styles.main} tabIndex={-1}>
-            {/* Controls rail — compact glass panel with preset/HDR/Dimmer */}
-            <section
-              className="eh-glass eh-controls-grid"
-              style={styles.controls}
-              role="toolbar"
-              aria-label="Visualizer settings"
-            >
-              {/* SettingsPanel internally renders the Preset selector, HDR and Dimmer toggles;
-                  it is fully keyboard-accessible and uses ARIA semantics. */}
-              <SettingsPanel />
-            </section>
-
             {/* Primary view content (Phase 2 shows PlayerCard). Other views will
                mount here based on our store-driven router. */}
             {mainView === "library" && (
@@ -179,12 +174,19 @@ const AppShell: React.FC = () => {
                 <DiscoveryView />
               </section>
             )}
-            <section aria-label="Player area">
+            {/* PlayerCard hidden - replaced by BottomPlayerBar */}
+            {/* <section aria-label="Player area">
               <PlayerCard />
-            </section>
+            </section> */}
           </main>
         </div>
       </div>
+
+      {/* ----------------------------------------------------------------------
+          3) FIXED BOTTOM PLAYER BAR
+          - Persistent player controls at bottom of viewport
+         ------------------------------------------------------------------- */}
+      <BottomPlayerBar />
     </div>
   );
 };

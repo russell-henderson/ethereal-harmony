@@ -34,11 +34,18 @@ At a high level the system consists of four layers, all inside the browser:
 
 1. **UI Layer**  
    React components under `src/components` and `src/app`  
-   - Layout shell, navigation, header, side panels  
-   - Player controls and playback surface  
-   - Library views, playlists, discovery, queue, and settings  
-   - Visualizer canvas and controls  
-   - Diagnostics and feedback components
+   - **Layout Shell** (`AppShell`):
+     - Fixed background WebGL canvas (visualizer)
+     - Top bar (`TopBar`) with menu, search, profile/settings
+     - Visualizer toolbar (`VisualizerToolbar`) with preset, HDR, dimmer controls
+     - Content grid with side panel (`SidePanel`) and main content area
+     - Fixed bottom player bar (`BottomPlayerBar`)
+   - **Player Components**: Bottom player bar with volume, transport, now playing, time/speed
+   - **View Components**: Library, Playlists, Discovery views with split-pane layout (list + detail)
+   - **Visualizer Components**: Scene canvas, toolbar controls, preset selectors
+   - **Settings Components**: Settings panel, audio device picker, EQ panel
+   - **Utility Components**: Global hotkeys, media key bridge, error boundaries, toasts
+   - **Diagnostics**: Performance overlays and feedback components
 
 2. **State Layer**  
    Zustand stores under `src/lib/state`  
@@ -207,17 +214,34 @@ This section traces an end-to-end path from user input through audio processing 
 
 **Process:**
 1. React components subscribe to stores using Zustand hooks:
-   - `PlayerCard` reads `usePlayerStore` for current track and playback state
-   - `TransportBar` reads position/duration and dispatches seek actions
+   - `BottomPlayerBar` reads `usePlayerStore` and `PlaybackController` events for current track and playback state
+   - `LibraryView`, `PlaylistsView`, `DiscoveryView` use `SplitPane` layout and read from `usePlayerStore` and `useUIStore`
+   - `VisualizerToolbar` reads `useVizStore` for preset, HDR, and dimmer state
    - `SceneCanvas` reads `useVizStore` for preset and parameter changes
 2. Components re-render when subscribed state changes
 3. Diagnostics overlays (if enabled) read from `PerfEvents` and display FPS/metrics
 
+**Component Hierarchy:**
+```
+AppShell
+├── TopBar (menu, search, profile/settings)
+├── VisualizerToolbar (preset, HDR, dimmer)
+├── ContentGrid
+│   ├── SidePanel (Library, Playlists, Discovery navigation)
+│   └── MainContent
+│       ├── LibraryView (SplitPane: list + detail)
+│       ├── PlaylistsView (SplitPane: list + detail)
+│       └── DiscoveryView (SplitPane: categories + list + detail)
+└── BottomPlayerBar (volume, now playing, transport, time/speed)
+```
+
 **Key Modules:**
-- [`src/components/player/PlayerCard.tsx`](../src/components/player/PlayerCard.tsx)
-- [`src/components/player/TransportBar.tsx`](../src/components/player/TransportBar.tsx)
-- [`src/components/visualizer/SceneCanvas.tsx`](../src/components/visualizer/SceneCanvas.tsx)
-- [`src/lib/diagnostics/PerfEvents.ts`](../src/lib/diagnostics/PerfEvents.ts)
+- [`src/components/layout/AppShell.tsx`](../src/components/layout/AppShell.tsx) - Main layout scaffold
+- [`src/components/player/BottomPlayerBar.tsx`](../src/components/player/BottomPlayerBar.tsx) - Persistent bottom player bar
+- [`src/components/layout/SplitPane.tsx`](../src/components/layout/SplitPane.tsx) - Split-pane layout component
+- [`src/components/visualizer/VisualizerToolbar.tsx`](../src/components/visualizer/VisualizerToolbar.tsx) - Visualizer controls toolbar
+- [`src/components/visualizer/SceneCanvas.tsx`](../src/components/visualizer/SceneCanvas.tsx) - WebGL renderer wrapper
+- [`src/lib/diagnostics/PerfEvents.ts`](../src/lib/diagnostics/PerfEvents.ts) - Performance event system
 
 ---
 

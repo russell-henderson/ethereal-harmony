@@ -909,3 +909,64 @@ input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: var(--eh-focus
   border-color: rgba(255, 255, 255, 0.3) !important;
   transform: translateX(-2px);
 }
+
+/* ==========================================================================
+   RESPONSIVE LAYOUT
+   ========================================================================== */
+
+/* Split pane: stack vertically on narrow screens */
+@media (max-width: 768px) {
+  .split-pane[data-responsive="true"] {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto 1fr !important;
+  }
+  
+  .split-pane__left {
+    grid-row: 1 !important;
+    max-height: 40vh;
+  }
+  
+  .split-pane__right-header {
+    grid-row: 2 !important;
+  }
+  
+  .split-pane__right-body {
+    grid-row: 3 !important;
+  }
+}
+
+/* Bottom player bar: ensure it doesn't overlap content on mobile */
+@media (max-width: 768px) {
+  .bottom-player-bar {
+    height: 70px !important;
+    padding: 0 8px !important;
+    gap: 8px !important;
+    font-size: 12px;
+  }
+  
+  .bottom-player-bar > div:first-child {
+    min-width: 120px !important;
+  }
+  
+  .bottom-player-bar > div:last-child {
+    min-width: 150px !important;
+  }
+}
+
+/* Visualizer toolbar: ensure it remains accessible on mobile */
+@media (max-width: 768px) {
+  .visualizer-toolbar {
+    padding: 6px 8px !important;
+    min-height: 40px !important;
+    gap: 8px !important;
+    flex-wrap: wrap;
+  }
+}
+
+/* Content grid: adjust padding on mobile */
+@media (max-width: 768px) {
+  .content-grid {
+    padding: 12px !important;
+    gap: 12px !important;
+  }
+}

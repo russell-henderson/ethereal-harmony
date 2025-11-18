@@ -134,6 +134,8 @@
   /* ===== 1.13 DIMENSIONS ===== */
   --eh-sidepanel-w: 260px;
   --eh-topbar-h:    64px;
+  --eh-visualizer-toolbar-h: 48px;
+  --eh-bottom-bar-h: 80px;
   --eh-component-gap: 24px;
   --eh-controls-gap: 16px;
 

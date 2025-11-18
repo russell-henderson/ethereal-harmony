@@ -49,6 +49,11 @@ export type UIState = {
 
   controlsPinned: boolean;    // keep controls rail visible atop viz
   topBarHeight: number;       // measured in px (ephemeral, not persisted)
+  
+  // Split pane layout settings (optional, persisted)
+  splitPaneLayout?: {
+    leftPaneWidth: string;    // e.g., "300px", "400px"
+  };
 
   // Diagnostics
   showFps: boolean;           // show FPS overlay
@@ -65,6 +70,8 @@ export type UIState = {
   toggleControlsPinned: () => void;
 
   setTopBarHeight: (px: number) => void;
+
+  setSplitPaneLayout: (layout: { leftPaneWidth: string }) => void;
 
   setShowFps: (v: boolean) => void;
   toggleFps: () => void;
@@ -101,6 +108,7 @@ const DEFAULTS: UIState = {
 
   controlsPinned: true,
   topBarHeight: 56,
+  splitPaneLayout: undefined,
   showFps: false,
   modal: "none",
 
@@ -111,6 +119,7 @@ const DEFAULTS: UIState = {
   setControlsPinned: () => {},
   toggleControlsPinned: () => {},
   setTopBarHeight: () => {},
+  setSplitPaneLayout: () => {},
   setShowFps: () => {},
   toggleFps: () => {},
   openModal: () => {},
@@ -191,6 +200,8 @@ export const useUIStore = create<UIState>()(
         set({ topBarHeight: clamped });
       },
 
+      setSplitPaneLayout: (layout) => set({ splitPaneLayout: layout }),
+
       setShowFps: (v) => set({ showFps: !!v }),
       toggleFps: () => set({ showFps: !get().showFps }),
 
@@ -217,6 +228,7 @@ export const useUIStore = create<UIState>()(
         // keep writing this for one more version window if you want dual-writes:
         // sidebarCollapsed: !s.sidePanelOpen,
         controlsPinned: s.controlsPinned,
+        splitPaneLayout: s.splitPaneLayout,
         showFps: s.showFps,
       }),
 
