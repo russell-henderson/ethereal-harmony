@@ -1,3 +1,10 @@
+---
+Version: 1.0.0
+Last Updated: 2025-01-27
+Status: Draft
+Owner: Russell Henderson
+---
+
 > Part of [Ethereal Harmony Documentation](./README.md)
 
 **Quick Links**  
@@ -8,11 +15,6 @@
 **Deep Links**: [ADRs](./ADR) · [Diagrams](./diagrams) · [Security Reviews](./security) · [Ops/Runbooks](./ops) · [Reports](./reports) · [Images](./images/ui-overview.png)
 
 # Glossary & Acronyms
-
-> Part of [Ethereal Harmony Documentation](./README.md)
-
-**Quick Links:**  
-[Overview](./MASTER_OVERVIEW.md) · [Database](./DATABASE.md) · [API Reference](./API_REFERENCE.md) · [Accessibility](./ACCESSIBILITY.md) · [Roadmap](./ROADMAP.md)
 
 ## Domain Terms
 

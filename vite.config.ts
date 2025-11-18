@@ -36,5 +36,10 @@ export default defineConfig({
   esbuild: {
     loader: 'tsx',
     include: /src\/.*\.(tsx|ts)$/,
-  }
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test-setup.ts'],
+  },
 })

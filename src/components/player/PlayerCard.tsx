@@ -27,6 +27,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import playbackController from "@/lib/audio/PlaybackController";
 import { Icon } from "@/lib/utils/IconRegistry";
 import { parseBlob } from "music-metadata-browser";
+import { toast } from "@/components/feedback/Toasts";
 
 type TrackMeta = {
   title?: string;
@@ -67,6 +68,28 @@ const PlayerCard: React.FC = () => {
     const offPlay = playbackController.on("play", () => setIsPlaying(true));
     const offPause = playbackController.on("pause", () => setIsPlaying(false));
     const offEnded = playbackController.on("ended", () => setIsPlaying(false));
+    const offError = playbackController.on("error", (e) => {
+      const err = e.error;
+      const message = err instanceof Error ? err.message : String(err || "Playback error");
+      
+      if (message.includes("NotAllowedError") || message.includes("autoplay")) {
+        toast.error("Autoplay blocked", {
+          message: "Please click play to start playback. Some browsers require user interaction.",
+        });
+      } else if (message.includes("NotSupportedError") || message.includes("format")) {
+        toast.error("Unsupported format", {
+          message: "This audio format is not supported by your browser.",
+        });
+      } else if (message.includes("network") || message.includes("CORS") || message.includes("fetch")) {
+        toast.error("Network error", {
+          message: "Unable to load audio. Please check your connection and try again.",
+        });
+      } else {
+        toast.error("Playback error", {
+          message: message,
+        });
+      }
+    });
     const offTime = playbackController.on("timeupdate", (e) => {
       if (!isScrubbing) setCurrentTime(e.currentTime);
     });
@@ -100,6 +123,7 @@ const PlayerCard: React.FC = () => {
       offPlay();
       offPause();
       offEnded();
+      offError();
       offTime();
       offDur();
       offRate();

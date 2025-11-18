@@ -1,3 +1,10 @@
+---
+Version: 1.0.0
+Last Updated: 2025-01-27
+Status: Draft
+Owner: Russell Henderson
+---
+
 > Part of [Ethereal Harmony Documentation](./README.md)
 
 **Quick Links**  
@@ -9,12 +16,19 @@
 
 # Backend Documentation
 
-> Part of [Ethereal Harmony Documentation](./README.md)
+## Reality Check
 
-**Quick Links:**  
-[Overview](./MASTER_OVERVIEW.md) · [Database](./DATABASE.md) · [API Reference](./API_REFERENCE.md) · [Accessibility](./ACCESSIBILITY.md) · [Roadmap](./ROADMAP.md)
+> **Current State (2025-01-27):**
+> 
+> - **No backend server exists today.** This is a frontend-only application.
+> - **All persistence is browser-side** using LocalStorage, IndexedDB, and Cache API.
+> - This document describes the current architecture (frontend-only) and may include forward-looking concepts for potential future backend services.
 
-## Frameworks, Packages, and Versions
+---
+
+## Current Architecture
+
+### Frameworks, Packages, and Versions
 
 There is no backend server or API in this codebase. All business logic, state management, and orchestration are implemented in the frontend (React + TypeScript). The architecture is modular, with a clear separation of concerns for audio, state, diagnostics, and UI.
 
@@ -23,11 +37,13 @@ There is no backend server or API in this codebase. All business logic, state ma
 - React, Zustand, Three.js, Framer Motion, hls.js (all frontend)
 - No backend or server-side frameworks
 
-## App Entrypoints
+### App Entrypoints
 
 - No Node.js/Express/server entrypoint. The app is a static SPA, entry is `src/index.tsx`.
 
-## Services/Controllers/Handlers
+### Services/Controllers/Handlers
+
+> **Current:** These are frontend domain modules, not backend services.
 
 - `AudioEngine` (`src/lib/audio/AudioEngine.ts`): Core audio playback, state, and event handling.
 - `PlaybackController` (`src/lib/audio/PlaybackController.ts`): Orchestrates playback, queue, repeat/shuffle, and event forwarding.
@@ -35,36 +51,50 @@ There is no backend server or API in this codebase. All business logic, state ma
 - `DeviceManager`, `OutputDeviceManager`, `EQGraph`, `Limiter`: Audio device and effects management.
 - `PerfEvents` (`src/lib/diagnostics/PerfEvents.ts`): Performance diagnostics, event pub/sub.
 
-## Middleware Chain
+### Middleware Chain
 
 Not applicable (no HTTP stack).
 
-## Auth/Permissions
+### Auth/Permissions
 
 No authentication or permissions model.
 
-## Validation
+### Validation
 
 Defensive programming in playback and audio modules (never throw on user actions).
 
-## Error Handling
+### Error Handling
 
 - Error boundaries in React (`src/components/feedback/ErrorBoundary.tsx`).
 - Defensive error handling in audio modules.
 
-## Background Jobs
+### Background Jobs
 
 - Performance sampling (RAF loop in `PerfEvents`).
 - LocalStorage for developer toggles and settings.
 
-## Configuration (Env Var Table)
+### Configuration (Env Var Table)
 
 - No `.env` or config files. All config is in code or browser storage.
 
-## Performance Practices
+### Performance Practices
 
 - Performance overlays, FPS sampling, and adaptive quality for visualizer.
 - No connection pooling, caching, or pagination (not applicable).
+
+---
+
+## Future Considerations (Planned/Conceptual)
+
+> **Note:** The following sections describe potential future backend services that do not exist today. These are design references only.
+
+If a backend service is added in the future, it might include:
+
+- Remote library indexing and sync
+- Multi-device synchronization
+- Shared playlists and social features
+- Telemetry and analytics aggregation
+- User accounts and authentication
 
 ## Code Path Citations
 

@@ -4,26 +4,52 @@
 **Core**: [Overview](../MASTER_OVERVIEW.md) · [Roadmap](../ROADMAP.md)  
 **Architecture**: [Frontend](../FRONTEND.md) · [Backend](../BACKEND.md) · [DevOps](../DEVOPS.md) · [Database](../DATABASE.md) · [API Ref](../API_REFERENCE.md)  
 **Quality**: [Accessibility](../ACCESSIBILITY.md) · [Security](../SECURITY.md) · [Performance](../PERFORMANCE.md) · [Observability](../OBSERVABILITY.md) · [Test Plan](../TEST_PLAN.md)  
-**This Folder**: [Architecture](./architecture-overview.mmd) · [Cross‑Cutting](./cross-cutting-concerns.mmd) · [Deployment](./deployment-topology.mmd) · [Sequence (Auth)](./sequence-auth.mmd) · [Services Context](./services-context.mmd)
+**This Folder**: [Architecture](./architecture-overview.mmd) · [Cross‑Cutting](./cross-cutting-concerns.mmd) · [Deployment](./deployment-topology.mmd) · [Playback Sequence](./sequence-auth.mmd) · [Services Context](./services-context.mmd)
+
+> **Note:** Despite the filename, this diagram shows the playback sequence flow, not authentication. There is no authentication in the current frontend-only implementation.
+
+## Playback Sequence Flow
 
 sequenceDiagram
   participant U as User
   participant FE as Frontend (React)
-  participant AE as Audio Engine
-  participant VZ as Visualizer
+  participant PC as PlaybackController
+  participant AE as AudioEngine
+  participant AB as AnalyserBus
+  participant VZ as Visualizer (SceneController)
+  participant ST as State Stores
+  
   U->>FE: Load App
-  FE->>AE: Initialize Audio Engine
-  FE->>VZ: Initialize Visualizer
-  U->>FE: Select Track/Stream
-  FE->>AE: Load Track/Stream
-  AE-->>FE: Ready/Playback State
-  FE-->>U: UI Feedback (Ready/Playing)
+  FE->>AE: Initialize AudioEngine
+  FE->>VZ: Initialize Visualizer Scene
+  FE->>ST: Hydrate persisted state
+  
+  U->>FE: Select Track/Stream (File or URL)
+  FE->>FE: TrackLoader.loadTrackFromFile/Url()
+  FE->>ST: usePlayerStore.setQueue([track])
+  ST->>PC: Load track via PlaybackController
+  PC->>AE: AudioEngine.load(track.url)
+  AE-->>PC: Track loaded
+  PC->>AE: AudioEngine.play()
+  AE-->>ST: Playback state update (isPlaying: true)
+  ST-->>FE: State change triggers re-render
+  FE-->>U: UI shows playing state
+  
+  loop Every Frame (60 FPS)
+    AE->>AB: Audio data via AnalyserNode
+    AB->>VZ: AnalyserBus.sample() → { low, mid, high, rms }
+    VZ->>ST: Read useVizStore params
+    VZ->>VZ: Update Three.js shader uniforms
+    VZ->>VZ: Render scene
+    VZ-->>FE: Canvas updated
+  end
+  
   U->>FE: Interact with Controls (Play/Pause/Seek)
-  FE->>AE: Playback Command
-  AE-->>FE: Playback State Update
-  FE->>VZ: Update Visualization
-  VZ-->>FE: Rendered Frame
-  FE-->>U: Visual Feedback
+  FE->>PC: PlaybackController.pause/seek()
+  PC->>AE: AudioEngine.pause/seek()
+  AE-->>ST: State update
+  ST-->>FE: Re-render with new state
+  FE-->>U: UI feedback
 
 
 ---

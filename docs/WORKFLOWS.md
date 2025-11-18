@@ -1,3 +1,10 @@
+---
+Version: 1.0.0
+Last Updated: 2025-01-27
+Status: Draft
+Owner: Russell Henderson
+---
+
 > Part of [Ethereal Harmony Documentation](./README.md)
 
 **Quick Links**  
@@ -16,12 +23,11 @@ Defines repo workflow, branching, commits, CI/CD, and release strategy.
 ## Git Strategy
 
 - **Branches**:
-  - `main`: stable, production-ready.
-  - `dev`: integration branch.
-  - `feature/*`: per-feature development.
+  - `master`: stable, production-ready (current default branch)
+  - `feature/*`: per-feature development
 - **PRs**:
-  - Must pass CI before merge.
-  - Require 1 reviewer approval.
+  - Manual review process (no CI configured yet)
+  - Code review before merge
 
 ---
 
@@ -37,23 +43,47 @@ Defines repo workflow, branching, commits, CI/CD, and release strategy.
 
 ## CI/CD
 
-- CI runs on all PRs:
-  - Lint (`eslint`).
-  - Type check (`tsc`).
-  - Unit + component tests (`vitest`).
-  - E2E tests (`playwright`).
-  - Lighthouse perf & a11y budget check.
-- CD: Deploy via {{platform}} (e.g., Vercel, Netlify) on merge to `main`.
+### Current State (Manual)
+- **No CI/CD configured yet**
+- Manual testing before commits:
+  - Run `npm run lint` to check code style
+  - Run `npm test` for unit tests (when implemented)
+  - Run `npm run build` to verify build succeeds
+  - Run `npm run preview` to test production build locally
+
+### Future CI/CD (Planned)
+- Automated checks on PRs:
+  - Lint (`npm run lint`)
+  - Type check (`tsc --noEmit`)
+  - Unit tests (`npm test`)
+  - E2E tests (`npm run e2e`)
+  - Build verification (`npm run build`)
+- Automated deployment:
+  - Deploy preview builds for PRs
+  - Deploy to production on merge to `master`
+  - Platform: TBD (Vercel, Netlify, or similar)
 
 ---
 
 ## Release Process
 
-- Semantic versioning (MAJOR.MINOR.PATCH).
-- On release:
-  - Update version in `package.json`.
-  - “What’s New” modal JSON updated.
-  - Publish build artifact (PWA bundle).
+### Current Process (Manual)
+1. **Update version** in `package.json` (semantic versioning: MAJOR.MINOR.PATCH)
+2. **Update changelog**: Run `npm run changelog` or manually update `CHANGELOG.md`
+3. **Build**: Run `npm run build`
+4. **Test**: Run `npm run preview` and verify locally
+5. **Deploy**: Upload `dist/` folder to static hosting service
+6. **Tag release** (optional): `git tag v1.0.0 && git push --tags`
+
+### Scripts Available
+- `npm run changelog`: Generate/update CHANGELOG.md from commits
+- `npm run changelog:dry`: Preview changelog changes without writing
+- `npm run release`: Update changelog and create git tag (requires manual version bump)
+
+### Future Automation
+- Automated version bumping via `npm version`
+- Automated changelog generation
+- Automated deployment on version tags
 
 ---
 

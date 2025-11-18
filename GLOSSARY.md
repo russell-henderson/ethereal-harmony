@@ -1,11 +1,14 @@
-# GLOSSARY.md — Ethereal Harmony
-
-## Domain Language
-
-- **Track**: Object with id, title, artist, album, durationSec, src, artworkUrl, palette
-- **Visualizer Preset**: Nebula, Glass Waves, Strobe Pulse (V1); HDR toggle opt-in
-- **Cache Tier**: 100 MB, 250 MB (default), 500 MB, 1 GB
-- **Performance Ladder**: Adaptive scaling down bloom/particles/buffer when FPS < 55
-
 ---
-**Acceptance:** Shared vocabulary across docs, code, and design.
+Version: 1.0.0
+Last Updated: 2025-01-27
+Status: Draft
+Owner: Russell Henderson
+---
+
+# Glossary
+
+> **Canonical source:** This document is a pointer to the full Glossary documentation.
+
+The complete Glossary documentation is located at [`docs/GLOSSARY.md`](./docs/GLOSSARY.md).
+
+For domain terms, acronyms, and shared vocabulary across the project, please refer to the canonical document.

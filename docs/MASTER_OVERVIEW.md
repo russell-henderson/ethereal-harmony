@@ -1,3 +1,10 @@
+---
+Version: 1.0.0
+Last Updated: 2025-01-27
+Status: Draft
+Owner: Russell Henderson
+---
+
 > Part of [Ethereal Harmony Documentation](./README.md)
 
 **Quick Links**  
@@ -9,16 +16,11 @@
 
 # Ethereal Harmony — Master Overview
 
-> Part of [Ethereal Harmony Documentation](./README.md)
-
-**Quick Links:**  
-[Overview](./MASTER_OVERVIEW.md) · [Database](./DATABASE.md) · [API Reference](./API_REFERENCE.md) · [Accessibility](./ACCESSIBILITY.md) · [Roadmap](./ROADMAP.md)
-
 ## System at a Glance
 
 - **Purpose:** Ethereal Harmony is a modern, interactive music player and visualizer built with React, Vite, and Three.js. It provides advanced playback, visualization, and device management features in a single-page application.
 - **Business Capabilities:** Local and streaming audio playback, real-time visualizations, device selection, equalizer, and user-friendly controls.
-- **High‑level diagram(s):** (See /docs/diagrams)
+- **High‑level diagram(s):** See [`./diagrams/architecture-overview.mmd`](./diagrams/architecture-overview.mmd) and [`./diagrams/services-context.mmd`](./diagrams/services-context.mmd) for component and system context diagrams.
 
 ---
 
@@ -136,6 +138,95 @@ All services are implemented as frontend modules. There are no backend microserv
 ## Roadmap & Risks
 
 - Known gaps, tech debt, ADR links
+
+---
+
+## Documentation Maintenance
+
+This section defines the maintenance policies and ownership for all documentation in the Ethereal Harmony project.
+
+### Version Field
+
+The `Version` field in document headers follows semantic versioning (MAJOR.MINOR.PATCH):
+
+- **MAJOR** (X.0.0): Bump when there are breaking changes to the documented architecture, significant restructuring, or removal of major sections.
+- **MINOR** (x.Y.0): Bump when adding new sections, significant content updates, or changes to documented workflows that don't break existing information.
+- **PATCH** (x.y.Z): Bump for typo fixes, clarifications, link updates, or minor corrections that don't change meaning.
+
+**When to bump:**
+- Update `Version` whenever you make substantive changes to a document.
+- Update `Last Updated` date to the current date (YYYY-MM-DD format).
+- If multiple documents are updated together, consider coordinating version bumps.
+
+### Status Field
+
+The `Status` field indicates the maturity and review state of documentation:
+
+- **Draft**: Initial creation, work in progress, or needs significant review. Content may be incomplete or inaccurate.
+- **Review**: Content is complete but awaiting peer review or stakeholder approval. Ready for feedback.
+- **Active**: Document has been reviewed and approved. It accurately reflects the current state of the system and is the authoritative source.
+
+**Status transitions:**
+- Start with `Draft` when creating new documentation.
+- Move to `Review` when content is complete and ready for feedback.
+- Move to `Active` after review and approval.
+- Revert to `Draft` if major changes are needed or the document becomes outdated.
+
+### Review Cadence
+
+Core documentation should be re-validated periodically to ensure accuracy:
+
+- **High-frequency docs** (ARCHITECTURE.md, FRONTEND.md, API_REFERENCE.md): Review quarterly or when major features are added.
+- **Medium-frequency docs** (DATABASE.md, SECURITY.md, DEVOPS.md): Review semi-annually or when related systems change.
+- **Low-frequency docs** (BRAND_GUIDELINES.md, GLOSSARY.md, ROADMAP.md): Review annually or when explicitly needed.
+
+**Review process:**
+1. Owner reviews document against current codebase.
+2. Updates content, version, and `Last Updated` date.
+3. Changes status to `Review` if significant updates were made.
+4. Moves to `Active` after verification.
+
+### CHANGELOG.md Relationship
+
+**Decision:** CHANGELOG.md tracks code changes only. Documentation updates are not logged in CHANGELOG.md.
+
+**Rationale:**
+- Documentation versioning is handled via the `Version` field in each document header.
+- The `Last Updated` field provides a timestamp for when documentation was modified.
+- Keeping code and documentation changes separate reduces noise in the changelog.
+- Major documentation restructures or new documentation initiatives can be mentioned in release notes if needed, but not in the changelog itself.
+
+If a major documentation milestone occurs (e.g., complete documentation overhaul, new documentation system), it may be noted in release notes or project announcements, but not in CHANGELOG.md.
+
+---
+
+## Documentation Owner Matrix
+
+| Document | Owner | Review Cadence | Last Review |
+|----------|-------|----------------|-------------|
+| MASTER_OVERVIEW.md | Russell Henderson | Quarterly | 2025-01-27 |
+| ARCHITECTURE.md | Russell Henderson | Quarterly | 2025-01-27 |
+| PRD.md | Russell Henderson | Quarterly | 2025-01-27 |
+| FRONTEND.md | Russell Henderson | Quarterly | 2025-01-27 |
+| BACKEND.md | Russell Henderson | Semi-annually | 2025-01-27 |
+| DATABASE.md | Russell Henderson | Semi-annually | 2025-01-27 |
+| API_REFERENCE.md | Russell Henderson | Quarterly | 2025-01-27 |
+| STATE_MANAGEMENT.md | Russell Henderson | Quarterly | 2025-01-27 |
+| SECURITY.md | Russell Henderson | Semi-annually | 2025-01-27 |
+| ACCESSIBILITY.md | Russell Henderson | Semi-annually | 2025-01-27 |
+| PERFORMANCE.md | Russell Henderson | Semi-annually | 2025-01-27 |
+| OBSERVABILITY.md | Russell Henderson | Semi-annually | 2025-01-27 |
+| TEST_PLAN.md | Russell Henderson | Quarterly | 2025-01-27 |
+| DEVOPS.md | Russell Henderson | Semi-annually | 2025-01-27 |
+| WORKFLOWS.md | Russell Henderson | Semi-annually | 2025-01-27 |
+| ONBOARDING.md | Russell Henderson | Quarterly | 2025-01-27 |
+| CONTRIBUTING.md | Russell Henderson | Semi-annually | 2025-01-27 |
+| BRAND_GUIDELINES.md | Russell Henderson | Annually | 2025-01-27 |
+| GLOSSARY.md | Russell Henderson | Annually | 2025-01-27 |
+| ROADMAP.md | Russell Henderson | Quarterly | 2025-01-27 |
+| README.md | Russell Henderson | Quarterly | 2025-01-27 |
+
+**Note:** As the project grows, ownership should be distributed to domain experts. Update this matrix when ownership changes.
 
 ---
 

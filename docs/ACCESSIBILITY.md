@@ -1,3 +1,10 @@
+---
+Version: 1.0.0
+Last Updated: 2025-01-27
+Status: Draft
+Owner: Russell Henderson
+---
+
 > Part of [Ethereal Harmony Documentation](./README.md)
 
 **Quick Links**  
@@ -8,11 +15,6 @@
 **Deep Links**: [ADRs](./ADR) · [Diagrams](./diagrams) · [Security Reviews](./security) · [Ops/Runbooks](./ops) · [Reports](./reports) · [Images](./images/ui-overview.png)
 
 # Accessibility Documentation
-
-> Part of [Ethereal Harmony Documentation](./README.md)
-
-**Quick Links:**  
-[Overview](./MASTER_OVERVIEW.md) · [Database](./DATABASE.md) · [API Reference](./API_REFERENCE.md) · [Accessibility](./ACCESSIBILITY.md) · [Roadmap](./ROADMAP.md)
 
 Ethereal Harmony is designed to comply with **WCAG 2.1 AA**. Accessibility is intrinsic, not an afterthought.
 
@@ -64,8 +66,74 @@ Ethereal Harmony is designed to comply with **WCAG 2.1 AA**. Accessibility is in
 
 ## Reduced Motion
 
-- Motion-heavy effects (e.g., particle intensity, camera sway) are clamped when “Reduced Motion” OS setting is detected.
-- Transitions prefer opacity/fade instead of large-scale transforms.
+Ethereal Harmony respects the `prefers-reduced-motion` CSS media query and provides user controls to override system preferences.
+
+### System Detection
+
+The app detects reduced motion preferences via:
+- **CSS Media Query**: `(prefers-reduced-motion: reduce)` 
+- **Utility**: `src/lib/utils/ReducedMotion.ts` provides `onReducedMotionChange()` callback
+- **Settings Override**: Users can manually enable/disable reduced motion in Settings, overriding system preference
+
+### Visualizer Behavior
+
+When reduced motion is active:
+
+1. **ParticlesField** (`src/lib/three/components/ParticlesField.ts`):
+   - Camera motion (subtle sway) is **completely disabled** (`rmFactor = 0`)
+   - Particle shader motion continues but is scaled by `motionScale` parameter
+   - Audio-reactive particle displacement is reduced proportionally
+
+2. **SceneController** (`src/lib/visualizer/SceneController.ts`):
+   - Camera wobble is scaled by quality preset's `motionScaleMax` (0.6-1.0 range)
+   - Lower quality tiers have lower `motionScaleMax` values, naturally reducing motion
+   - **Note**: SceneController does not directly check reduced motion; it relies on quality presets
+
+3. **Quality Presets** (`src/lib/visualizer/QualityPresets.ts`):
+   - Each tier has a `motionScaleMax` value:
+     - Ultra: 1.0 (full motion)
+     - High: 0.9
+     - Medium: 0.8
+     - Low: 0.7
+     - Fallback: 0.6 (minimal motion)
+   - These values cap camera and particle motion regardless of user settings
+
+### Interaction with Performance Guards
+
+- **AdaptiveGuard** may reduce quality tier when performance is poor, which automatically reduces `motionScaleMax`
+- Reduced motion preference does **not** trigger quality tier changes
+- Both systems work independently: reduced motion for accessibility, quality tiers for performance
+
+### UI Animations
+
+- **Framer Motion** (`src/app/providers/MotionProvider.tsx`):
+  - Configured with `reducedMotion="user"` to automatically respect system preference
+  - All Framer Motion animations (modals, toggles, transitions) automatically reduce when preference is active
+
+- **CSS Transitions**:
+  - `@media (prefers-reduced-motion: reduce)` rules in `globals.css` disable or reduce animation durations
+  - Focus rings and other UI elements use reduced-duration transitions
+
+### Settings Integration
+
+- **Settings Store** (`src/lib/state/useSettingsStore.ts`):
+  - `reducedMotion: boolean | undefined`
+  - `undefined` = follow system preference
+  - `true` = force reduced motion on
+  - `false` = force reduced motion off
+  - Accessible via Settings modal toggle
+
+### Testing Reduced Motion
+
+To verify reduced motion behavior:
+
+1. **System Level**: Enable "Reduce motion" in OS accessibility settings
+2. **App Level**: Toggle "Reduced Motion" in Settings modal
+3. **Expected Behavior**:
+   - Camera sway in visualizer should stop (ParticlesField)
+   - Particle motion should be reduced (shader displacement scaled)
+   - UI animations should be minimal or disabled
+   - Quality tier changes should still work independently
 
 ---
 
