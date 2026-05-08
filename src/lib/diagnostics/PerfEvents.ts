@@ -110,7 +110,7 @@ const _target: EventTarget =
   IS_BROWSER && "EventTarget" in window ? new EventTarget() : (new SimpleTarget() as unknown as EventTarget);
 
 /** Helper to emit CustomEvent safely (browser only) */
-const emit = (type: string, detail: T) => {
+const emit = <T>(type: string, detail: T) => {
   if (typeof window === 'undefined') return;
   
   const evt = new CustomEvent(type, { 
