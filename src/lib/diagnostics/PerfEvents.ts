@@ -110,18 +110,16 @@ const _target: EventTarget =
   IS_BROWSER && "EventTarget" in window ? new EventTarget() : (new SimpleTarget() as unknown as EventTarget);
 
 /** Helper to emit CustomEvent safely (browser only) */
-const emit = <T>(type: string, detail: T) => {
-  if (typeof window === 'undefined') return;
-  
-  const evt = new CustomEvent(type, { 
-    detail, 
-    bubbles: false, 
-    cancelable: false, 
-    composed: false 
+function emit<T>(type: string, detail: T) {
+  if (!IS_BROWSER) return;
+  const evt = new CustomEvent(type, {
+    detail,
+    bubbles: false,
+    cancelable: false,
+    composed: false
   });
-  
   _target.dispatchEvent(evt);
-};
+}
 
 /* -------------------------------------------------------------------------- */
 /*                           Long Tasks (busy percent)                         */
@@ -137,7 +135,6 @@ const initLongTasks = () => {
   try {
     po = new PerformanceObserver((list) => {
       // "longtask" has spec'd name; Chromium populates entries as PerformanceEntry with duration
-      // @ts-expect-error – TS doesn't know "longtask" by default
       const entries: PerformanceEntry[] = list.getEntries();
       const now = performance.now();
       for (const e of entries) {
@@ -148,7 +145,6 @@ const initLongTasks = () => {
       const cutoff = now - 1000;
       while (longTaskWindow.length && longTaskWindow[0].t < cutoff) longTaskWindow.shift();
     });
-    // @ts-expect-error – "longtask" is not in lib.dom.d.ts yet in some TS targets
     po.observe({ entryTypes: ["longtask"] });
   } catch {
     po = null;
