@@ -109,13 +109,18 @@ class SimpleTarget {
 const _target: EventTarget =
   IS_BROWSER && "EventTarget" in window ? new EventTarget() : (new SimpleTarget() as unknown as EventTarget);
 
-/** Helper to emit CustomEvent safely. */
-const emit = <T>(type: string, detail: T) => {
-  if (!IS_BROWSER) return;
-  const evt = new CustomEvent<T>(type, { detail, bubbles: false, cancelable: false, composed: false });
+/** Helper to emit CustomEvent safely (browser only) */
+const emit = (type: string, detail: T) => {
+  if (typeof window === 'undefined') return;
+  
+  const evt = new CustomEvent(type, { 
+    detail, 
+    bubbles: false, 
+    cancelable: false, 
+    composed: false 
+  });
+  
   _target.dispatchEvent(evt);
-  // Also dispatch on window so non-module listeners can subscribe if desired.
-  window.dispatchEvent(evt);
 };
 
 /* -------------------------------------------------------------------------- */
