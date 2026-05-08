@@ -343,7 +343,7 @@ const safeMeasure = (name: string, startMark?: string, endMark?: string) => {
 /**
  * Time a synchronous or async function and emit an "eh:perf:measure".
  */
-const withMeasure = async <T>(
+const withMeasure = async <T,>(
   name: string,
   fn: () => T | Promise<T>
 ): Promise<T> => {

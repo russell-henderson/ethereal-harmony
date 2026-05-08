@@ -26,7 +26,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import playbackController from "@/lib/audio/PlaybackController";
 import { Icon } from "@/lib/utils/IconRegistry";
-import { parseBlob } from "music-metadata-browser";
+import { parseBlob } from "music-metadata";
 import { toast } from "@/components/feedback/Toasts";
 
 type TrackMeta = {

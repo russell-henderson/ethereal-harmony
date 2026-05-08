@@ -1,6 +1,6 @@
 // src/lib/audio/TrackLoader.ts
 
-import { parseBlob } from "music-metadata-browser";
+import { parseBlob } from "music-metadata";
 
 export type Track = {
   /** Stable identifier for UI lists and store */
