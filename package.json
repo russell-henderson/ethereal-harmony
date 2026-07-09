@@ -11,7 +11,7 @@
     "test:ui": "vitest --ui",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "e2e": "playwright test",
-    "check:md-images": "node check-md-images.mjs",
+    "check:md-images": "node scripts/check-md-images.mjs",
     "tree": "node scripts/export-tree.mjs",
     "tree:src": "node scripts/export-tree.mjs --root src --out src-structure.txt",
     "changelog": "node scripts/update-changelog.mjs",

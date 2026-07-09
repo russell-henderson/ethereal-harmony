@@ -96,7 +96,7 @@ const DiscoveryView: React.FC = () => {
             {categoryTracks.length === 0 ? (
               <EmptyState
                 message="No tracks in this category"
-                subtitle="Load tracks to see discovery results"
+                subtitle="Add local music or load a direct stream URL to build listening history"
               />
             ) : (
               <div style={{ marginTop: "var(--eh-gap-16, 16px)" }}>
@@ -145,7 +145,7 @@ const DiscoveryView: React.FC = () => {
           ) : (
             <EmptyState
               message="Select a track"
-              subtitle="Choose a track from the discovery list to view details"
+              subtitle="Choose a track from your listening history to view details"
             />
           )
         }

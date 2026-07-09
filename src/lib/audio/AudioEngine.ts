@@ -35,6 +35,8 @@
  *   That belongs in PlaybackController/MediaSession utility per the build plan.
  */
 
+import { normalizePlaybackUrl } from "@/lib/utils/UrlGuard";
+
 type Listener = (ev?: any) => void;
 
 type EventMap = {
@@ -404,7 +406,7 @@ export class AudioEngine {
    * and fall back to native playback if supported by the browser.
    */
   async load(url: string): Promise<void> {
-    const normalized = String(url || "").trim();
+    const normalized = normalizePlaybackUrl(String(url || ""));
     if (!normalized) throw new Error("AudioEngine.load: invalid URL");
     this.currentUrl = normalized;
 

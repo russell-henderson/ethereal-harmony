@@ -9,8 +9,8 @@
  *  - Content-Type sniff (e.g., application/vnd.apple.mpegurl, audio/*).
  *  - HLS viability (m3u8 + MediaSource support; optional HlsController probe).
  *
- * If everything looks good, you can "Send to Player" which calls a store
- * method if available: loadFromUrl/loadUrl/load(url).
+ * A normalized URL can be loaded into the player even when browser fetch probes
+ * are inconclusive; media element playback can succeed where CORS HEAD checks fail.
  *
  * Notes:
  *  - No external deps; safe to mount anywhere in Phase 2.
@@ -19,6 +19,8 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePlayerStore } from "@/lib/state/usePlayerStore";
+import { normalizePlaybackUrl } from "@/lib/utils/UrlGuard";
+import { toast } from "@/components/feedback/Toasts";
 
 // ---- Types ------------------------------------------------------------------
 
@@ -61,17 +63,6 @@ function isLikelyHlsUrl(u: string): boolean {
   } catch {
     return /\.m3u8(\?.*)?$/i.test(u);
   }
-}
-
-function normalizeUrl(input: string): string {
-  const s = input.trim();
-  if (!s) return s;
-  // Allow protocol-relative and common schemeless inputs
-  if (/^\/\//.test(s)) return `https:${s}`;
-  if (/^https?:\/\//i.test(s)) return s;
-  // If schemeless but looks like domain, assume https
-  if (/^[a-z0-9.-]+\.[a-z]{2,}([/:?#].*)?$/i.test(s)) return `https://${s}`;
-  return s;
 }
 
 async function probeCors(url: string): Promise<{ ok: boolean; status?: number; contentType?: string; bytes?: number }> {
@@ -164,27 +155,24 @@ const pill = (ok?: boolean | null) =>
   } as React.CSSProperties);
 
 const StreamTestWizard: React.FC = () => {
-  const loadFromUrl = usePlayerStore((s: any) => s.loadFromUrl ?? s.loadUrl ?? s.load);
+  const setQueue = usePlayerStore((s) => s.setQueue);
+  const play = usePlayerStore((s) => s.play);
   const [input, setInput] = useState("");
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<TestResult>(DEFAULTS);
+  const [loadingPlayer, setLoadingPlayer] = useState(false);
   const [log, setLog] = useState<string[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const canSendToPlayer = useMemo(() => {
-    if (!result.normalizedUrl) return false;
-    if (result.isLikelyHls) {
-      // For HLS, require CORS OK and MSE support; HlsController probe if available
-      return !!result.mediaSourceSupported && result.corsOk === true && (result.hlsControllerOk !== false);
-    }
-    // For direct audio, require CORS OK and an audio/* content type
-    return result.corsOk === true && !!result.contentType && /^audio\//i.test(result.contentType);
-  }, [result]);
+    const url = result.normalizedUrl || normalizePlaybackUrl(input);
+    return !!url && !running && !loadingPlayer;
+  }, [input, loadingPlayer, result.normalizedUrl, running]);
 
   const appendLog = (line: string) => setLog((l) => [...l, line]);
 
   const runTests = useCallback(async () => {
-    const url = normalizeUrl(input);
+    const url = normalizePlaybackUrl(input);
     setRunning(true);
     setLog([]);
     setResult(DEFAULTS);
@@ -259,12 +247,25 @@ const StreamTestWizard: React.FC = () => {
     setRunning(false);
   }, [input]);
 
-  const onSendToPlayer = () => {
-    if (!canSendToPlayer || !result.normalizedUrl) return;
+  const onSendToPlayer = async () => {
+    const url = result.normalizedUrl || normalizePlaybackUrl(input);
+    if (!canSendToPlayer || !url) return;
+
+    setLoadingPlayer(true);
     try {
-      loadFromUrl?.(result.normalizedUrl);
-    } catch {
-      // no-op; UI remains as a helper
+      const { loadTrackFromUrl } = await import("@/lib/audio/TrackLoader");
+      const track = await loadTrackFromUrl(url);
+      setQueue?.([track], 0);
+      await play?.();
+      toast.success("Stream loaded", {
+        message: track.title,
+      });
+    } catch (err) {
+      toast.error("Failed to load stream", {
+        message: err instanceof Error ? err.message : "Check the URL and try again.",
+      });
+    } finally {
+      setLoadingPlayer(false);
     }
   };
 
@@ -331,9 +332,10 @@ const StreamTestWizard: React.FC = () => {
           disabled={!canSendToPlayer}
           className="eh-btn eh-btn--glass"
           style={{ ...btnStyle, borderColor: "rgba(0,240,255,0.6)" }}
-          title={canSendToPlayer ? "Send to player" : "Run tests and ensure they pass first"}
+          title={canSendToPlayer ? "Load this URL in the player" : "Enter a stream URL first"}
+          aria-busy={loadingPlayer}
         >
-          Send to Player
+          {loadingPlayer ? "Loading..." : "Load in Player"}
         </button>
       </div>
 
@@ -372,7 +374,7 @@ const StreamTestWizard: React.FC = () => {
               <span style={{ marginLeft: 8, opacity: 0.9 }}>HTTP {result.status}</span>
             )}
             {result.bytesSampled ? (
-              <span style={{ marginLeft: 8, opacity: 0.9 }}>{result.bytesSampled} B</span>
+              <span style={{ marginLeft: 8, opacity: 0.9 }}>{result.bytesSampled} B</span>
             ) : null}
           </div>
         </div>
@@ -404,6 +406,9 @@ const StreamTestWizard: React.FC = () => {
                 <li key={i}>{e}</li>
               ))}
             </ul>
+            <p style={{ margin: "8px 0 0", fontSize: 12, opacity: 0.85 }}>
+              These checks are advisory. A direct Shoutcast, Icecast, HLS, or audio URL may still play in the browser media element.
+            </p>
           </div>
         )}
       </div>

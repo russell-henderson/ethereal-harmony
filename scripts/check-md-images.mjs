@@ -7,7 +7,7 @@ const imageRegex = /!\[[^\]]*\]\(([^)]+)\)/g; // captures ![alt](path)
 
 let errors = 0;
 
-const mds = await globby(["*.md", "docs/**/*.md"]);
+const mds = await globby(["docs/**/*.md"]);
 
 for (const file of mds) {
   const content = await readFile(file, "utf8");

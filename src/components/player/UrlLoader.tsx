@@ -1,6 +1,5 @@
 import { FormEvent, useState } from 'react'
 import { usePlayerStore } from '@/lib/state/usePlayerStore'
-import { isHttpsUrl } from '@/lib/utils/UrlGuard'
 import { loadTrackFromUrl } from '@/lib/audio/TrackLoader'
 import { toast } from '@/components/feedback/Toasts'
 
@@ -11,13 +10,6 @@ export const UrlLoader = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!isHttpsUrl(url)) {
-      toast.error('Invalid URL', {
-        message: 'Only HTTPS URLs are allowed for security.',
-      })
-      return
-    }
-
     setLoading(true)
     try {
       const track = await loadTrackFromUrl(url)

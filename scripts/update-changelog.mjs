@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * update-changelog.mjs
- * Generate/append a CHANGELOG.md section from conventional commits since the last tag.
+ * Generate/append a docs/CHANGELOG.md section from conventional commits since the last tag.
  *
  * Usage:
  *   node scripts/update-changelog.mjs               # uses package.json version
@@ -20,7 +20,7 @@ import path from "node:path";
 import { execSync } from "node:child_process";
 
 const ROOT = process.cwd();
-const CHANGELOG_PATH = path.join(ROOT, "CHANGELOG.md");
+const CHANGELOG_PATH = path.join(ROOT, "docs", "CHANGELOG.md");
 
 const ARGS = process.argv.slice(2);
 const EXPLICIT_VERSION = ARGS.find(a => /^\d+\.\d+\.\d+$/.test(a)) || null;
@@ -223,9 +223,9 @@ function main() {
 
   // Commit CHANGELOG and optionally tag
   try {
-    sh("git add CHANGELOG.md");
+    sh("git add docs/CHANGELOG.md");
     sh(`git commit -m "chore(changelog): update for v${version}"`);
-    console.log("✔ Committed CHANGELOG.md");
+    console.log("✔ Committed docs/CHANGELOG.md");
   } catch (e) {
     console.warn("⚠ Could not create commit (maybe no changes).", e?.message || e);
   }

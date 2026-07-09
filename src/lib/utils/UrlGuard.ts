@@ -17,7 +17,6 @@
 const HTTPS = "https:";
 const HTTP = "http:";
 const BLOB = "blob:";
-const DATA = "data:";
 
 const LOCALHOST_HOSTS = new Set([
   "localhost",
@@ -88,6 +87,44 @@ export function normalizeUrl(
 
   // Already has a scheme
   return raw;
+}
+
+/**
+ * Normalize a playback URL for secure deployment.
+ *
+ * On HTTPS origins, routes remote http:// URLs through the app proxy so
+ * production playback does not get blocked by mixed-content policy.
+ */
+export function buildStreamProxyUrl(
+  input: string,
+  opts: { allowHttpOnLocalhost?: boolean } = { allowHttpOnLocalhost: true }
+): string {
+  const normalized = normalizeUrl(input, opts);
+  const parsed = tryParseUrl(normalized);
+  if (!parsed) return normalized;
+  if (parsed.protocol !== HTTP) return normalized;
+  if (LOCALHOST_HOSTS.has(parsed.hostname)) return normalized;
+  if (typeof window === "undefined") return normalized;
+
+  const proxyUrl = new URL("/api/stream-proxy", window.location.origin);
+  proxyUrl.searchParams.set("url", normalized);
+  return proxyUrl.toString();
+}
+
+export function normalizePlaybackUrl(
+  input: string,
+  opts: { allowHttpOnLocalhost?: boolean } = { allowHttpOnLocalhost: true }
+): string {
+  const normalized = normalizeUrl(input, opts);
+  const parsed = tryParseUrl(normalized);
+  if (!parsed) return normalized;
+
+  const isSecurePage = typeof window !== "undefined" && window.location.protocol === HTTPS;
+  if (isSecurePage && parsed.protocol === HTTP && !LOCALHOST_HOSTS.has(parsed.hostname)) {
+    return buildStreamProxyUrl(normalized, opts);
+  }
+
+  return normalized;
 }
 
 /** True if scheme is allowed by our policy (https, http[localhost], blob). */
@@ -193,6 +230,8 @@ const UrlGuard = {
   isHttpUrl,
   isLocalhostUrl,
   normalizeUrl,
+  buildStreamProxyUrl,
+  normalizePlaybackUrl,
   isAllowedScheme,
   normalizeAndGuard,
   extOf,

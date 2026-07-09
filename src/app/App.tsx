@@ -120,7 +120,7 @@ export const App: React.FC = () => {
     };
   }, [duration, currentTime, playbackRate]);
 
-  // ---- IndexedDB Library Sync & 30 Stream Preload --------------------------
+  // ---- IndexedDB Library Sync ----------------------------------------------
   const hasHydrated = usePlayerStore((s) => s.hasHydrated);
   useEffect(() => {
     if (!hasHydrated) return;
@@ -128,22 +128,36 @@ export const App: React.FC = () => {
     const initLibrary = async () => {
       try {
         const { libraryDB } = await import("@/lib/audio/LibraryDB");
-        const { DEFAULT_STREAMS } = await import("@/lib/audio/DefaultStreams");
 
         let dbTracks = await libraryDB.getAllTracks();
 
-        if (dbTracks.length === 0) {
-          // First run: Seed default streams
-          const now = Date.now();
-          const seedTracks = DEFAULT_STREAMS.map((s, idx) => ({
-            ...s,
-            addedAt: now + idx,
-            playCount: 0,
+        // Production rollback: remove the old hard-coded radio catalog while
+        // preserving local files and user-added stream URLs.
+        const seededStreamIds = dbTracks
+          .filter((track) => track.id.startsWith("default-stream-"))
+          .map((track) => track.id);
+
+        if (seededStreamIds.length > 0) {
+          await Promise.all(seededStreamIds.map((id) => libraryDB.deleteTrack(id)));
+          dbTracks = dbTracks.filter((track) => !seededStreamIds.includes(track.id));
+
+          const state = usePlayerStore.getState();
+          const cleanedQueue = state.queue.filter((track) => !seededStreamIds.includes(track.id));
+          const cleanedPlaylists = state.playlists.map((playlist) => ({
+            ...playlist,
+            trackIds: playlist.trackIds.filter((trackId) => !seededStreamIds.includes(trackId)),
           }));
-          for (const t of seedTracks) {
-            await libraryDB.saveTrack(t);
-          }
-          dbTracks = await libraryDB.getAllTracks();
+          const nextIndex =
+            cleanedQueue.length === 0
+              ? -1
+              : Math.min(Math.max(state.index, 0), cleanedQueue.length - 1);
+
+          usePlayerStore.setState({
+            queue: cleanedQueue,
+            playlists: cleanedPlaylists,
+            index: nextIndex,
+            current: nextIndex >= 0 ? cleanedQueue[nextIndex] : null,
+          });
         }
 
         // Recreate Object URLs for local files and cover arts
@@ -187,7 +201,7 @@ export const App: React.FC = () => {
         }
 
         const { playbackController } = await import("@/lib/audio/PlaybackController");
-        await playbackController.setQueue(loadedTracks, nextIndex >= 0 ? nextIndex : 0, false);
+        await playbackController.setQueue(loadedTracks, loadedTracks.length > 0 && nextIndex >= 0 ? nextIndex : 0, false);
       } catch (err) {
         console.error("[App] Failed to initialize local library:", err);
       }

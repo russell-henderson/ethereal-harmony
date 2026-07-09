@@ -10,6 +10,9 @@ Each file covers a specific domain, from vision and design to implementation, se
 - [MASTER_OVERVIEW.md](./MASTER_OVERVIEW.md)  
   Purpose, architecture, tech stack, repo structure, risks.
 
+- [EXECUTIVE_SUMMARY.md](./EXECUTIVE_SUMMARY.md)  
+  Product positioning, scope, risks, and delivery phases.
+
 - [ROADMAP.md](./ROADMAP.md)  
   Phase plan (Foundation → Playback → Visualizer → Library/Settings → Polish), milestones, future features, risks.
 
@@ -27,6 +30,9 @@ Each file covers a specific domain, from vision and design to implementation, se
 
 ## 3. Data & APIs
 
+- [API_SPEC.md](./API_SPEC.md)  
+  Compact product/API specification notes.
+
 - [DATABASE.md](./DATABASE.md)  
   Data models (Track, Playlist, Settings, Player, Viz), local storage strategy.
 
@@ -40,6 +46,18 @@ Each file covers a specific domain, from vision and design to implementation, se
 
 ## 4. Engineering Quality
 
+- [CHANGELOG.md](./CHANGELOG.md)  
+  Code-change history.
+
+- [IMPROVEMENTS.md](./IMPROVEMENTS.md)  
+  Improvement backlog and implementation analysis.
+
+- [TASK_LIST.md](./TASK_LIST.md)  
+  Structured task list.
+
+- [TODO.md](./TODO.md) and [TODOv2.md](./TODOv2.md)  
+  Current implementation plans and task notes.
+
 - [PERFORMANCE.md](./PERFORMANCE.md)  
   Bottlenecks, performance budgets, adaptive guard, test plan.
 
@@ -51,6 +69,12 @@ Each file covers a specific domain, from vision and design to implementation, se
 
 - [WORKFLOWS.md](./WORKFLOWS.md)  
   Git branching, commit conventions, CI/CD, release strategy.
+
+- [Refactor_ethereal.md](./Refactor_ethereal.md)  
+  Refactor notes and implementation strategy.
+
+- [project-structure.txt](./project-structure.txt)  
+  Snapshot of the repository structure.
 
 ---
 
@@ -79,3 +103,9 @@ Each file covers a specific domain, from vision and design to implementation, se
 - ✅ V1 Documentation scaffold complete  
 - 🛠 Actively building V1 features (see [ROADMAP.md](./ROADMAP.md))  
 - 📌 Future: V2 collaborative playlists, profiles, casting
+
+---
+
+## Archive
+
+Historical root-level duplicate docs and retired prototypes live under [root-archive](./root-archive/). Prefer the canonical files listed above for current work.

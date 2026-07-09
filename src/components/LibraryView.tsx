@@ -176,7 +176,7 @@ const LibraryView: React.FC = () => {
 
             <div style={{ flex: 1, minHeight: 0 }}>
               {sorted.length === 0 ? (
-                <EmptyState message="No tracks found" subtitle={searchQuery ? "Try a different search term" : "Drag files in or click Add Files"} />
+                <EmptyState message="No tracks found" subtitle={searchQuery ? "Try a different search term" : "Drag files in, click Add Files, or open a direct stream URL from the File menu"} />
               ) : (
                 <TrackList
                   tracks={sorted}
@@ -347,7 +347,7 @@ const LibraryView: React.FC = () => {
           ) : (
             <EmptyState
               message="Select a track"
-              subtitle="Choose a track from the list to view metadata inspector and playlist settings"
+              subtitle="Choose a track to view metadata and playlist options"
             />
           )
         }

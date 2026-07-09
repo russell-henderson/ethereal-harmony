@@ -1,169 +1,177 @@
-> Part of [Ethereal Harmony Documentation](./README.md)
+# TODOv2: Roll Back Listed Streaming Radio
 
-**Quick Links**  
-**Core**: [Overview](./MASTER_OVERVIEW.md) · [Roadmap](./ROADMAP.md) · [Brand](./BRAND_GUIDELINES.md) · [Glossary](./GLOSSARY.md)  
-**Architecture**: [Frontend](./FRONTEND.md) · [Backend](./BACKEND.md) · [DevOps](./DEVOPS.md) · [Database](./DATABASE.md) · [API Ref](./API_REFERENCE.md)  
-**Quality**: [Accessibility](./ACCESSIBILITY.md) · [Security](./SECURITY.md) · [Performance](./PERFORMANCE.md) · [Observability](./OBSERVABILITY.md) · [Test Plan](./TEST_PLAN.md) · [Workflows](./WORKFLOWS.md)  
-**People**: [Onboarding](./ONBOARDING.md) · [Contributing](./CONTRIBUTING.md)  
-**Deep Links**: [ADRs](./ADR) · [Diagrams](./diagrams) · [Security Reviews](./security) · [Ops/Runbooks](./ops) · [Reports](./reports) · [Images](./images/ui-overview.png)
+## Goal
 
-# TODO.md — Ethereal Harmony V1 “Ready‑to‑Ship” Checklist
+Remove the built-in/default streaming radio listing while preserving all other audio functionality:
 
-> Stack: React 18 + TypeScript + Vite • Zustand domain stores • Three.js WebGLRenderer • Framer Motion • Web Audio API • PWA. Visual style: glassmorphism (radius 16px, blur 16px, rgba(255,255,255,0.12), 1px rgba(255,255,255,0.25)) with the core palette Deep Indigo, Soft Lavender, Radiant Aqua.
+- Local file import and playback
+- Queue and playlist behavior
+- Visualizer, EQ, effects, transport, volume, metadata, and device controls
+- Optional user-supplied stream URL playback for direct Shoutcast, Icecast, HLS, or audio URLs
 
----
+The app should no longer seed or display a default catalog of external radio streams.
 
-## 0) Ship Gates (must all be ✅ before release)
+## Rationale
 
-* [ ] Cold start to interactive ≤ \~2s on desktop Chrome; app installable as PWA.
-* [ ] Visualizer holds 55–60 FPS on Tier‑2 desktop; adaptive guard engages under load.
-* [ ] Keyboard parity + WCAG AA contrast on glass; reduced‑motion respected.
-* [ ] HTTPS streams only; HLS works on Chromium (hls.js) and Safari (native).
-* [ ] MediaSession integration (title/art, hardware keys).
-* [ ] Library import/export stable at scale; cache meter accurate with purge.
+The current default stream catalog is not reliable enough to present as a product feature. Many entries depend on external station behavior that the app cannot control:
 
----
+- CORS headers
+- HTTP vs HTTPS mixed-content restrictions
+- Redirects
+- Non-audio station pages
+- Incorrect MIME types
+- Regional or temporary station outages
 
-## 1) App Shell & State (Foundation)
+Manual stream URL playback should remain available because users can provide known-good direct stream endpoints.
 
-* [ ] **App shell** with regions: `TopBar`, `SidePanel`, `Main`, `PlayerCard` (store‑driven view switcher in V1).
-* [ ] **Providers** loaded early (theme, motion, error). Files exist as in blueprint.
-* [ ] **Stores**: `usePlayerStore`, `useVizStore`, `useSettingsStore`, `useUIStore` with persist for theme, density, volume, viz params, repeat, shuffle, deviceId.
-* [ ] **Diagnostics**: first‑launch probe assigns device tier; overlay toggle (Ctrl+Shift+D).
+## Implementation Plan
 
-**Acceptance**: Tab order TopBar → SidePanel → PlayerCard; focus ring visible; rehydration before first paint.
+### 1. Stop Seeding Default Streams
 
----
+- [x] Update `src/app/App.tsx`.
+- [x] Remove the import of `DEFAULT_STREAMS`.
+- [x] Remove the first-run logic that saves default streams into IndexedDB when the library is empty.
+- [x] Keep the IndexedDB library sync for local tracks and any user-added remote tracks.
 
-## 2) Core Audio & Transport
+Acceptance criteria:
 
-* [ ] `AudioEngine` graph: `AudioContext` → master `GainNode` → limiter → analyser.
-* [ ] `TrackLoader`: local Files + HTTPS URL + HLS via `HlsController`.
-* [ ] `PlaybackController`: `play/pause/seek/next/prev`, repeat (“off|one|all”), shuffle.
-* [ ] `DeviceManager`: enumerate/switch output device (where supported).
-* [ ] MediaSession metadata + hardware keys.
+- A fresh install starts with an empty library.
+- No default `default-stream-*` records are created.
+- Local file loading still restores from IndexedDB.
 
-**Acceptance**: MP3/AAC file + HTTPS stream + HLS play smoothly; limiter on by default toggleable in Settings.
+### 2. Remove Seeded Default Streams From Existing Browsers
 
----
+- [x] Add a small migration path during app initialization.
+- [x] Delete IndexedDB tracks whose IDs start with `default-stream-`.
+- [x] Remove matching tracks from the persisted Zustand queue.
+- [x] Preserve all non-default tracks, including user-added stream URLs.
+- [x] Preserve playlists, but filter removed default stream IDs out of playlist `trackIds`.
 
-## 3) Player UI (Accessible Controls)
+Acceptance criteria:
 
-* [ ] `PlayerCard` hosts `AlbumArt`, `TrackInfo`, `TransportBar`, `Timeline`, `VolumeSlider`.
-* [ ] `PlaybackButtons`: Prev / Play‑Pause / Next / Shuffle / Repeat with `aria-pressed`. Shortcuts: Space, M, R, S.
-* [ ] `Timeline`: smooth progress + keyboard scrub (Left/Right).
-* [ ] `VolumeSlider`: 0–1, live percent to SR; Up/Down adjust; M mute.
-* [ ] `EqPanel`: 10‑band graph with presets Flat, Rock, Pop, Electronic (V1).
+- Users who already loaded the app no longer see the old default station list.
+- User-imported files remain.
+- User-created playlists remain.
+- User-added remote URLs remain unless their ID matches the old default prefix.
 
-**Acceptance**: Touch targets ≥44px; no clicks/pops switching EQ; Space toggles play; SR announces state.
+### 3. Keep Manual Stream URL Support
 
----
+- [x] Keep `TrackLoader.loadTrackFromUrl`.
+- [x] Keep `AudioEngine` remote URL playback.
+- [x] Keep `HlsController`.
+- [x] Keep `/api/stream-proxy.js` for HTTP stream proxying where deployed.
+- [x] Keep the stream wizard and menu entry as the manual URL path.
 
-## 4) Visualizer MVP
+Acceptance criteria:
 
-* [ ] `WebGLCanvas` lifecycle + context loss handler; lazy‑loaded Three.js.
-* [ ] Scene: `ParticlesField`, `MistLayers`, `PostProcessing` (SMAA/FXAA, bloom).
-* [ ] Wire analyser bands (low/mid/high) as uniforms; motion/intensity params.
-* [ ] Presets: Nebula, Glass Waves, Strobe Pulse; HDR toggle (opt‑in); “Dimmer” (caps bloom/exposure).
+- A direct HTTPS MP3/AAC stream URL can still be loaded.
+- A direct HLS `.m3u8` URL can still be attempted through native HLS or `hls.js`.
+- HTTP streams still route through the existing proxy on HTTPS origins.
 
-**Acceptance**: Preset switch instant; FPS ≥55; reduced‑motion path clamps large moves.
+### 4. Fix Stream Wizard Send-To-Player
 
----
+- [x] Update `src/components/streaming/StreamTestWizard.tsx`.
+- [x] Replace the missing store action lookup with the same working pattern used by `UrlLoader`:
+  - `loadTrackFromUrl(result.normalizedUrl)`
+  - `usePlayerStore.getState().setQueue([track], 0)`
+  - `usePlayerStore.getState().play()`
+- [x] Show success and failure toasts.
+- [x] Allow loading from the normalized URL even if diagnostic fetch probes are advisory warnings.
 
-## 5) Library, Playlists, Discovery
+Acceptance criteria:
 
-* [ ] `LibraryView` + virtualized `TrackList`; shared debounced `SearchBar`.
-* [ ] Import dialog: Files/folders; parse metadata (title/artist/album/duration/artwork).
-* [ ] Playlists: create/rename/delete/add/remove; M3U/PLS import; JSON export.
-* [ ] Discovery smart crates: Recently Added / Most Played / Not Played.
+- Clicking `Send to Player` actually loads the tested URL.
+- Failed URLs produce clear errors.
+- The wizard does not depend on non-existent `usePlayerStore.loadFromUrl`.
 
-**Acceptance**: 1k+ items scroll at 55–60 FPS; search filters library/playlists; export includes full metadata.
+### 5. Update Empty States And Copy
 
----
+- [x] Update empty states in Library and Discovery where needed.
+- [x] Emphasize local music, playlists, visualizer controls, and optional stream URL loading.
+- [x] Avoid implying that built-in radio discovery is available.
 
-## 6) Settings, Cache, What’s New
+Acceptance criteria:
 
-* [ ] `SettingsModal` tabs: Theme & Density; Visualizer Controls; Audio Device; Cache Controls; Telemetry (opt‑in).
-* [ ] Cache tiers UI: 100 MB / 250 MB (default) / 500 MB / 1 GB + purge.
-* [ ] “What’s New” modal shows once per version; reachable via Settings.
+- Empty library messaging points users toward adding files or opening a stream URL.
+- Discovery does not look broken when no tracks exist.
 
-**Acceptance**: Meter accurate; purge clears artwork/sidecars safely; telemetry remains off by default.
+### 6. Retire `DefaultStreams.ts`
 
----
+- [x] Remove `src/lib/audio/DefaultStreams.ts` after no imports remain.
+- [x] Use prefix-based cleanup, so the deleted file is not needed for migration.
 
-## 7) Streaming & Share
+Acceptance criteria:
 
-* [ ] **Stream Test Wizard**: URL, CORS, MIME, redirects, latency; clear toasts.
-* [ ] **Share Dialog** for track/playlist metadata.
+- No production import references `DefaultStreams`.
+- Build succeeds without the file.
 
-**Acceptance**: Wizard validates HLS readiness; share sheet copies rich data.
+### 7. Verification
 
----
+Run:
 
-## 8) Accessibility (AA) Pass
+```bash
+npm run build
+npm run lint
+```
 
-* [ ] Visible Radiant‑Aqua focus ring + inner contrast outline across all controls.
-* [ ] Dialogs: proper roles, labelled, focus‑trapped, Esc closes.
-* [ ] Lists: roving tabindex; Enter plays; Menu key opens “more”.
-* [ ] Contrast on glass validated with darken layer where needed.
+Manual checks:
 
-**Acceptance**: aXe shows no critical issues; manual keyboard audit passes.
+- Fresh browser profile shows no default radio stations.
+- Existing profile with old defaults has them removed.
+- Local file import still works.
+- Queue playback still works.
+- Playlist creation and add/remove still work.
+- Manual stream URL still loads when the URL is a valid direct stream.
+- Visualizer still reacts during local playback and remains active during remote playback.
 
----
+## Non-Goals
 
-## 9) Performance Guardrails
+- Do not build a new radio directory.
+- Do not add station scraping.
+- Do not attempt automatic discovery of working public streams.
+- Do not remove the audio engine, visualizer, EQ, playlist, or local library features.
+- Do not remove manual stream URL loading.
 
-* [ ] First‑launch probe (≈2s) assigns tier; adaptive ladder reduces bloom/particles/buffer scale to hold frame budget.
-* [ ] Lazy‑load Three/shaders; memoized Zustand selectors; debounce search.
-* [ ] Palette extraction in Web Worker.
+## Implementation Log
 
-**Acceptance**: Average FPS within target during playback and UI interactions.
+### Completed Changes
 
----
+- `src/app/App.tsx`
+  - Removed first-run default radio stream seeding.
+  - Added production rollback cleanup for old `default-stream-*` IndexedDB records.
+  - Filters old seeded stream IDs out of the persisted player queue.
+  - Filters old seeded stream IDs out of playlist membership while preserving playlists.
+  - Continues to restore local files and user-added non-default remote tracks.
 
-## 10) Security & Resilience
+- `src/components/streaming/StreamTestWizard.tsx`
+  - Replaced the missing `usePlayerStore.loadFromUrl` path with `loadTrackFromUrl`, `setQueue`, and `play`.
+  - Added success and failure toasts.
+  - Changed `Send to Player` to `Load in Player`.
+  - Allows loading a normalized stream URL even when CORS/content-type probes are only advisory.
 
-* [ ] Enforce HTTPS for remote audio; URL guard + MIME checks.
-* [ ] Sanitize metadata strings before rendering.
-* [ ] ErrorBoundary wraps app; WebGL fallback to CSS gradient if init fails.
+- `src/components/LibraryView.tsx`
+  - Updated empty-state copy to focus on local files and optional direct stream URLs.
 
-**Acceptance**: Failures produce non‑blocking toasts; app remains usable.
+- `src/components/DiscoveryView.tsx`
+  - Updated empty-state copy to avoid implying built-in radio discovery.
 
----
+- `src/lib/audio/DefaultStreams.ts`
+  - Deleted the hard-coded default station catalog.
 
-## 11) QA & CI
+### Production Notes
 
-* [ ] Unit tests for stores/utils (Vitest); RTL for Player/Settings; Playwright smoke: import → play → seek → volume → settings → preset swap.
-* [ ] Lighthouse perf & a11y budgets in CI.
-* [ ] Storybook for primitives/PlayerCard with a11y addon.
+- This rollback is intentionally conservative for Vercel production: it removes unreliable external station listing behavior without touching the audio engine, local file library, visualizer, EQ, playlists, or stream proxy.
+- The cleanup targets only IDs beginning with `default-stream-`. User-added remote URLs are preserved unless they reused that legacy seeded ID prefix.
+- Stream diagnostics remain advisory. Some Icecast/Shoutcast endpoints reject browser `fetch` probes but still play through an `<audio>` element.
+- `npm run build` passes after the rollback.
+- `npm run lint` currently fails due to pre-existing repo-wide lint issues, including `any` usage, unused imports, hook ordering, parsing errors in unrelated files, and Fast Refresh export warnings. The stream wizard changes are not listed in the lint failure output.
+- Vite still reports large chunk warnings and dynamic/static import overlap for `TrackLoader`, `PlaybackController`, and `MediaSession`. These existed as architectural bundling concerns and should be handled separately from the streaming radio rollback.
 
-**Acceptance**: CI green; budgets respected; smoke passes on PR.
+### Follow-Up Candidates
 
----
-
-## 12) Release Pack
-
-* [ ] Versioned build; “What’s New” JSON updated; modal shown once per version.
-* [ ] Product sheet and quick‑start docs under `/docs`.
-
----
-
-## Parking‑Lot for V1.1 / V2 (don’t block V1)
-
-* Panel Layout Manager with unlockable/resizable panels.
-* Additional EQ presets (Jazz, Classical), crossfade, casting, CDN release notes.
-* Profiles/follows, collaborative playlists, voice search/mic visualizer.
-
----
-
-### Quick Run-of-Show (Cursor order)
-
-1. App shell + stores + probe/overlay → 2) Audio engine + transport → 3) Player UI →
-2. Visualizer MVP → 5) Library/Playlists/Import → 6) Settings/Cache/What’s New →
-3. Streaming wizard/share → 8) A11y & perf hardening → 9) QA/CI → 10) Release.
-
-> This checklist aligns with the locked blueprint and build plan. Checking every box yields a V1 that meets the performance, accessibility, privacy, and feature targets we set.
-
----
-
-[← Back to Documentation Index](./README.md)
+- Add a dedicated lightweight `Open Stream URL` modal separate from the diagnostic wizard.
+- Persist user-added stream URLs to IndexedDB with explicit user consent, instead of only placing them in the current queue.
+- Add clearer error mapping for media element failures such as unsupported codec, DNS failure, and station timeout.
+- Add a production smoke test that verifies a fresh profile does not render `default-stream-*` tracks.
+- Clean the repo-wide ESLint backlog so lint can become a reliable production gate.
+- Consider route-level or feature-level code splitting for the large main bundle and `hls.js` chunk.

@@ -1,5 +1,6 @@
 // src/lib/audio/TrackLoader.ts
 import { parseId3 } from "./Id3Parser";
+import { normalizePlaybackUrl } from "@/lib/utils/UrlGuard";
 
 export type Track = {
   /** Stable identifier for UI lists and store */
@@ -39,16 +40,6 @@ const ALLOWED_FILE_EXTS = [
 /** Guards ------------------------------------------------------------------ */
 
 const isHls = (u: string) => /\.m3u8(\?.*)?$/i.test(u);
-
-const normalizeUrl = (input: string): string => {
-  const s = (input || "").trim();
-  if (!s) return s;
-  if (/^\/\//.test(s)) return `https:${s}`;
-  if (/^https?:\/\//i.test(s)) return s;
-  // If looks like a domain/path but missing scheme, assume https
-  if (/^[a-z0-9.-]+\.[a-z]{2,}([/:?#].*)?$/i.test(s)) return `https://${s}`;
-  return s;
-};
 
 const extOf = (name: string) => {
   const m = /\.([a-z0-9]+)$/i.exec(name);
@@ -200,7 +191,7 @@ export async function loadTrackFromFile(file: File): Promise<Track> {
  * - Optionally probes duration for direct audio; HLS is flagged as stream.
  */
 export async function loadTrackFromUrl(inputUrl: string): Promise<Track> {
-  const url = normalizeUrl(inputUrl);
+  const url = normalizePlaybackUrl(inputUrl);
   if (!url) throw new Error("loadTrackFromUrl: empty URL");
 
   const hls = isHls(url);
