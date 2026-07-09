@@ -35,6 +35,7 @@ import React from "react";
 // Core chrome
 import TopBar from "@/components/layout/TopBar";
 import SidePanel from "@/components/layout/SidePanel";
+import ModalHost from "@/components/layout/ModalHost";
 
 // Player surface (main content example — additional views render here)
 import PlayerCard from "@/components/player/PlayerCard";
@@ -187,6 +188,7 @@ const AppShell: React.FC = () => {
           - Persistent player controls at bottom of viewport
          ------------------------------------------------------------------- */}
       <BottomPlayerBar />
+      <ModalHost />
     </div>
   );
 };

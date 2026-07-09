@@ -50,11 +50,23 @@ const SettingsModal: React.FC<{
                 <span className={styles.fieldLabel}>Theme</span>
                 <select
                   value={settings.theme}
-                  onChange={e => settings.setTheme(e.target.value as "system" | "dark")}
+                  onChange={e => settings.setTheme(e.target.value as "system" | "dark" | "light")}
                   className={styles.select}
                 >
                   <option value="system">System</option>
                   <option value="dark">Dark</option>
+                  <option value="light">Light</option>
+                </select>
+              </label>
+              <label className={styles.fieldColumn}>
+                <span className={styles.fieldLabel}>Layout Density</span>
+                <select
+                  value={settings.density}
+                  onChange={e => settings.setDensity(e.target.value as "comfortable" | "compact")}
+                  className={styles.select}
+                >
+                  <option value="comfortable">Comfortable</option>
+                  <option value="compact">Compact</option>
                 </select>
               </label>
               <label className={styles.fieldRow}>

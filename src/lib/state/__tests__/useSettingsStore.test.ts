@@ -7,6 +7,7 @@ beforeEach(() => {
   useSettingsStore.setState({
     theme: 'dark',
     view: 'player',
+    density: 'comfortable',
     reducedMotion: undefined,
     vizPreset: 'medium',
     hdrEnabled: true,
@@ -50,8 +51,14 @@ describe('useSettingsStore', () => {
   });
 
   describe('toggleTheme', () => {
-    it('should toggle from dark to system', () => {
+    it('should toggle from dark to light', () => {
       useSettingsStore.setState({ theme: 'dark' });
+      useSettingsStore.getState().toggleTheme();
+      expect(useSettingsStore.getState().theme).toBe('light');
+    });
+
+    it('should toggle from light to system', () => {
+      useSettingsStore.setState({ theme: 'light' });
       useSettingsStore.getState().toggleTheme();
       expect(useSettingsStore.getState().theme).toBe('system');
     });
@@ -77,6 +84,18 @@ describe('useSettingsStore', () => {
     it('should set view to stream', () => {
       useSettingsStore.getState().setView('stream');
       expect(useSettingsStore.getState().view).toBe('stream');
+    });
+  });
+
+  describe('setDensity', () => {
+    it('should set density to comfortable', () => {
+      useSettingsStore.getState().setDensity('comfortable');
+      expect(useSettingsStore.getState().density).toBe('comfortable');
+    });
+
+    it('should set density to compact', () => {
+      useSettingsStore.getState().setDensity('compact');
+      expect(useSettingsStore.getState().density).toBe('compact');
     });
   });
 

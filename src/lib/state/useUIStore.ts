@@ -36,7 +36,9 @@ export type UIModal =
   | "hotkeys"
   | "about"
   | "stream-wizard"
-  | "device-picker";
+  | "device-picker"
+  | "audio-inspector"
+  | "playlist-export";
 
 export type MainView = "library" | "playlists" | "discovery";
 

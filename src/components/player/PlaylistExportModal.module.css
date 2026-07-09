@@ -1,0 +1,180 @@
+.modal {
+  min-width: 320px;
+  width: 90%;
+  max-width: 480px;
+  max-height: 80vh;
+  padding: 0;
+  border-radius: var(--eh-glass-radius, 16px);
+  border: none;
+  outline: none;
+  box-shadow: var(--eh-shadow-2, 0 12px 32px rgba(0,0,0,0.32));
+  overflow: hidden;
+  color: var(--eh-text, #eaf1ff);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid var(--eh-glass-border-color, rgba(255, 255, 255, 0.15));
+}
+
+.title {
+  margin: 0;
+  font-family: var(--eh-font-title);
+  font-size: var(--eh-fs-lg, 18px);
+  font-weight: 700;
+  color: var(--eh-aqua, #00f0ff);
+}
+
+.closeHeaderBtn {
+  background: none;
+  border: none;
+  color: var(--eh-text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.15s;
+}
+
+.closeHeaderBtn:hover {
+  color: var(--eh-text);
+}
+
+.body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.formatSelectRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: var(--eh-fs-sm, 14px);
+}
+
+.sectionLabel {
+  font-weight: 600;
+  color: var(--eh-text-subtle, #a6b6d6);
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.radioLabel input {
+  cursor: pointer;
+}
+
+.actionRow {
+  display: flex;
+  justify-content: flex-end;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0.8rem;
+}
+
+.playlistListContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.listTitle {
+  margin: 0;
+  font-family: var(--eh-font-title);
+  font-size: var(--eh-fs-sm, 14px);
+  font-weight: 700;
+  color: var(--eh-text-subtle, #a6b6d6);
+}
+
+.emptyMsg {
+  margin: 0;
+  font-size: var(--eh-fs-sm, 14px);
+  color: var(--eh-text-muted);
+  font-style: italic;
+  padding: 1rem 0;
+}
+
+.playlistGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.playlistCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  background: var(--eh-surface, rgba(255, 255, 255, 0.04));
+  border-radius: var(--eh-radius-12, 12px);
+  border: var(--eh-glass-border);
+}
+
+.playlistInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.playlistName {
+  font-size: var(--eh-fs-sm, 14px);
+  font-weight: 600;
+  color: var(--eh-text);
+}
+
+.playlistTracks {
+  font-size: var(--eh-fs-xs, 12px);
+  color: var(--eh-text-muted);
+}
+
+.statusMsg {
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  color: var(--eh-aqua, #00f0ff);
+  font-size: var(--eh-fs-sm, 14px);
+  padding: 0.6rem 1rem;
+  border-radius: var(--eh-radius-10, 10px);
+  text-align: center;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--eh-glass-border-color, rgba(255, 255, 255, 0.15));
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.closeBtn {
+  background: none;
+  border: 1px solid var(--eh-glass-border-color, rgba(255, 255, 255, 0.25));
+  color: var(--eh-text-muted);
+  border-radius: var(--eh-button-radius, 12px);
+  padding: 0.5rem 1.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.closeBtn:hover {
+  border-color: var(--eh-text);
+  color: var(--eh-text);
+}

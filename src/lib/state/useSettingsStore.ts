@@ -49,8 +49,9 @@ import { persist, createJSONStorage, StateStorage } from "zustand/middleware";
  * Local Types (self-contained to avoid external coupling)
  * ------------------------------------------------------------------------- */
 
-export type ThemeMode = "dark" | "system";
+export type ThemeMode = "dark" | "light" | "system";
 export type AppView = "player" | "settings" | "stream";
+export type DensityMode = "comfortable" | "compact";
 
 /** Preset IDs match QualityPresets.ts keys (keep union in sync if you add more). */
 export type VizPresetId = "low" | "medium" | "high" | "ultra";
@@ -60,6 +61,7 @@ export interface SettingsState {
   // Persisted
   theme: ThemeMode;
   view: AppView;
+  density: DensityMode;
   reducedMotion: boolean | undefined;
 
   vizPreset: VizPresetId;
@@ -79,6 +81,7 @@ export interface SettingsState {
   toggleTheme: () => void;
 
   setView: (view: AppView) => void;
+  setDensity: (mode: DensityMode) => void;
 
   setReducedMotion: (v: boolean | undefined) => void;
 
@@ -99,7 +102,7 @@ const STORAGE_VERSION = 3;
 
 // Narrow string → valid union helpers (guards bad or stale data)
 function normalizeTheme(mode: any): ThemeMode {
-  return mode === "system" ? "system" : "dark";
+  return mode === "system" ? "system" : mode === "light" ? "light" : "dark";
 }
 function normalizeView(view: any): AppView {
   return view === "settings" || view === "stream" ? view : "player";
@@ -118,6 +121,9 @@ function applyThemeClass(mode: ThemeMode) {
   if (mode === "dark") {
     el.classList.add("theme-dark");
     el.classList.remove("theme-light");
+  } else if (mode === "light") {
+    el.classList.add("theme-light");
+    el.classList.remove("theme-dark");
   } else {
     // "system": let OS decide by removing explicit classes
     el.classList.remove("theme-dark");
@@ -146,6 +152,7 @@ function dispatchStatsEvent(enabled: boolean) {
 const DEFAULTS: Omit<SettingsState, keyof SettingsState & string> & SettingsState = {
   theme: "dark",
   view: "player",
+  density: "comfortable",
   reducedMotion: undefined,
 
   vizPreset: "medium",
@@ -166,6 +173,7 @@ const DEFAULTS: Omit<SettingsState, keyof SettingsState & string> & SettingsStat
   setTheme: () => {},
   toggleTheme: () => {},
   setView: () => {},
+  setDensity: () => {},
   setReducedMotion: () => {},
   setVizPreset: () => {},
   setHdrEnabled: () => {},
@@ -211,13 +219,16 @@ export const useSettingsStore = create(
       },
       toggleTheme: (): void => {
         const curr = get().theme;
-        const next: ThemeMode = curr === "dark" ? "system" : "dark";
+        const next: ThemeMode = curr === "dark" ? "light" : curr === "light" ? "system" : "dark";
         set({ theme: next });
         applyThemeClass(next);
       },
       setView: (view: AppView): void => {
         const v = normalizeView(view);
         if (v !== get().view) set({ view: v });
+      },
+      setDensity: (mode: DensityMode): void => {
+        set({ density: mode === "compact" ? "compact" : "comfortable" });
       },
       setReducedMotion: (v: boolean | undefined): void => {
         if (typeof v === "boolean" || typeof v === "undefined") {
@@ -245,6 +256,7 @@ export const useSettingsStore = create(
       partialize: (s) => ({
         theme: s.theme,
         view: s.view,
+        density: s.density,
         reducedMotion: typeof s.reducedMotion === "boolean" ? s.reducedMotion : undefined,
 
         vizPreset: s.vizPreset,
@@ -262,6 +274,7 @@ export const useSettingsStore = create(
           ...DEFAULTS,
           theme: typeof p.theme === 'string' ? normalizeTheme(p.theme) : DEFAULTS.theme,
           view: typeof p.view === 'string' ? normalizeView(p.view) : DEFAULTS.view,
+          density: typeof p.density === 'string' ? (p.density as DensityMode) : DEFAULTS.density,
           reducedMotion: typeof p.reducedMotion === 'boolean' ? p.reducedMotion as boolean : DEFAULTS.reducedMotion,
           vizPreset: typeof p.vizPreset === 'string' ? normalizePreset(p.vizPreset) : DEFAULTS.vizPreset,
           hdrEnabled: typeof p.hdrEnabled === 'boolean' ? p.hdrEnabled as boolean : DEFAULTS.hdrEnabled,
@@ -275,6 +288,7 @@ export const useSettingsStore = create(
           setTheme: DEFAULTS.setTheme,
           toggleTheme: DEFAULTS.toggleTheme,
           setView: DEFAULTS.setView,
+          setDensity: DEFAULTS.setDensity,
           setReducedMotion: DEFAULTS.setReducedMotion,
           setVizPreset: DEFAULTS.setVizPreset,
           setHdrEnabled: DEFAULTS.setHdrEnabled,
@@ -303,6 +317,7 @@ export const useSettingsStore = create(
           hasHydrated: true,
           theme: mode,
           view: normalizeView(state?.view),
+          density: typeof state?.density === "string" ? (state.density as DensityMode) : DEFAULTS.density,
           reducedMotion:
             typeof state?.reducedMotion === "boolean" ? state?.reducedMotion : undefined,
           vizPreset: normalizePreset(state?.vizPreset),
@@ -316,6 +331,7 @@ export const useSettingsStore = create(
           setTheme: DEFAULTS.setTheme,
           toggleTheme: DEFAULTS.toggleTheme,
           setView: DEFAULTS.setView,
+          setDensity: DEFAULTS.setDensity,
           setReducedMotion: DEFAULTS.setReducedMotion,
           setVizPreset: DEFAULTS.setVizPreset,
           setHdrEnabled: DEFAULTS.setHdrEnabled,
@@ -340,6 +356,7 @@ export const useSettingsStore = create(
 export const selectHasHydrated = (s: SettingsState) => s.hasHydrated;
 
 export const selectView = (s: SettingsState) => s.view;
+export const selectDensity = (s: SettingsState) => s.density;
 export const selectTheme = (s: SettingsState) => s.theme;
 
 export const selectReducedMotionOverride = (s: SettingsState) => s.reducedMotion;
@@ -369,6 +386,7 @@ export const selectShowStats = (s: SettingsState) => s.showStats;
  * ------------------------------------------------------------------------- */
 
 export const setView = (view: AppView) => useSettingsStore.getState().setView?.(view);
+export const setDensity = (mode: DensityMode) => useSettingsStore.getState().setDensity?.(mode);
 export const setTheme = (mode: ThemeMode) => useSettingsStore.getState().setTheme?.(mode);
 export const setReducedMotion = (v: boolean | undefined) =>
   useSettingsStore.getState().setReducedMotion?.(v);

@@ -1,4 +1,3 @@
-```tsx
 // src/components/streaming/StreamTestWizard.tsx
 /**
  * StreamTestWizard
@@ -428,4 +427,3 @@ const StreamTestWizard: React.FC = () => {
 };
 
 export default StreamTestWizard;
-```

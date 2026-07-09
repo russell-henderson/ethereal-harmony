@@ -1,13 +1,40 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { openModal, toggleSidePanel, toggleFps } from "@/lib/state/useUIStore";
+import { playbackController } from "@/lib/audio/PlaybackController";
+import { loadTrackFromFile } from "@/lib/audio/TrackLoader";
 import styles from "./MenuBar.module.css";
+
+const triggerFileOpen = () => {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "audio/*";
+  input.multiple = true;
+  input.onchange = async (e) => {
+    const files = (e.target as HTMLInputElement).files;
+    if (files && files.length > 0) {
+      const tracks = [];
+      for (let i = 0; i < files.length; i++) {
+        try {
+          const track = await loadTrackFromFile(files[i]);
+          tracks.push(track);
+        } catch (err) {
+          console.error("Failed to load file:", err);
+        }
+      }
+      if (tracks.length > 0) {
+        await playbackController.setQueue(tracks, 0);
+      }
+    }
+  };
+  input.click();
+};
 
 const menuConfig = [
   {
     label: "File",
     items: [
-      { label: "Open Files…", id: "openFiles", action: () => openModal("device-picker") },
+      { label: "Open Files…", id: "openFiles", action: () => triggerFileOpen() },
       { label: "Open Stream URL…", id: "openStream", action: () => openModal("stream-wizard") },
     ],
   },
@@ -22,13 +49,14 @@ const menuConfig = [
     label: "Analyze",
     items: [
       { label: "Stream Test Wizard", id: "streamTest", action: () => openModal("stream-wizard") },
+      { label: "Audio Metadata Inspector", id: "audioInspector", action: () => openModal("audio-inspector") },
       { label: "Diagnostics Overlay", id: "diagnostics", action: () => toggleFps() },
     ],
   },
   {
     label: "Tools",
     items: [
-      { label: "Export Playlist (M3U/JSON)", id: "exportPlaylist", action: () => openModal("about") }, // Placeholder modal
+      { label: "Export Playlist (M3U/JSON)", id: "exportPlaylist", action: () => openModal("playlist-export") },
     ],
   },
   {

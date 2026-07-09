@@ -1,5 +1,5 @@
 // src/lib/audio/TrackLoader.ts
-
+import { parseId3 } from "./Id3Parser";
 
 export type Track = {
   /** Stable identifier for UI lists and store */
@@ -134,11 +134,22 @@ export async function loadTrackFromFile(file: File): Promise<Track> {
   // Try best-effort duration for local files too (usually quick)
   const duration = await probeDuration(objectUrl, 4000);
 
-  // Sanitized fallback metadata from local file details
-  const title = sanitizeTitle(file.name);
-  const artist = "Uploaded Track";
-  const album = "Local Files";
-  const artworkUrl = undefined;
+  // Parse metadata from local file details or ID3 tags
+  let title = sanitizeTitle(file.name);
+  let artist = "Uploaded Track";
+  let album = "Local Files";
+  let artworkUrl: string | undefined = undefined;
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const tags = parseId3(arrayBuffer);
+    if (tags.title) title = tags.title;
+    if (tags.artist) artist = tags.artist;
+    if (tags.album) album = tags.album;
+    if (tags.artworkUrl) artworkUrl = tags.artworkUrl;
+  } catch (err) {
+    console.warn("[TrackLoader] Failed to parse ID3 tags:", err);
+  }
 
   const track: Track = {
     id: makeId(),
