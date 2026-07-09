@@ -181,5 +181,34 @@ describe('usePlayerStore', () => {
       expect(usePlayerStore.getState().queue).toHaveLength(1);
     });
   });
+
+  describe('playlists', () => {
+    it('should create a playlist', () => {
+      const id = usePlayerStore.getState().createPlaylist('My Playlist');
+      const state = usePlayerStore.getState();
+      expect(state.playlists).toHaveLength(1);
+      expect(state.playlists[0].name).toBe('My Playlist');
+      expect(state.playlists[0].id).toBe(id);
+      expect(state.playlists[0].trackIds).toEqual([]);
+    });
+
+    it('should delete a playlist', () => {
+      const id = usePlayerStore.getState().createPlaylist('My Playlist');
+      usePlayerStore.getState().deletePlaylist(id);
+      expect(usePlayerStore.getState().playlists).toHaveLength(0);
+    });
+
+    it('should add to and remove from a playlist', () => {
+      const playlistId = usePlayerStore.getState().createPlaylist('My Playlist');
+      usePlayerStore.getState().addToPlaylist(playlistId, 'track-123');
+      
+      let state = usePlayerStore.getState();
+      expect(state.playlists[0].trackIds).toEqual(['track-123']);
+
+      usePlayerStore.getState().removeFromPlaylist(playlistId, 'track-123');
+      state = usePlayerStore.getState();
+      expect(state.playlists[0].trackIds).toEqual([]);
+    });
+  });
 });
 

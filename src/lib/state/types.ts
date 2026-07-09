@@ -178,6 +178,12 @@ export type PlayerActions = Partial<{
   nudgeVolume: (delta: number) => void;
   toggleMute: () => void;
   setRate: (r: number) => void;
+
+  /** Playlists */
+  createPlaylist: (name: string) => string;
+  deletePlaylist: (playlistId: string) => void;
+  addToPlaylist: (playlistId: string, trackId: string) => void;
+  removeFromPlaylist: (playlistId: string, trackId: string) => void;
 }>;
 
 /** Core state exposed by the player slice. */

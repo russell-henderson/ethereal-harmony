@@ -14,6 +14,7 @@ export interface ParsedId3 {
   year?: string;
   genre?: string;
   artworkUrl?: string;
+  artworkBlob?: Blob;
 }
 
 /**
@@ -149,6 +150,7 @@ export function parseId3(arrayBuffer: ArrayBuffer): ParsedId3 {
           if (picData.length > 0) {
             const blob = new Blob([picData], { type: mimeType || "image/jpeg" });
             result.artworkUrl = URL.createObjectURL(blob);
+            result.artworkBlob = blob;
           }
         }
       } catch (err) {

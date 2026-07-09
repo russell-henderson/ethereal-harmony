@@ -67,6 +67,12 @@ export const usePlayerStore = create<PlayerStore>()(
       playbackRate: 1,
       playlists: [],
       hasHydrated: false,
+      createPlaylist: (name: string): string => {
+        const id = Math.random().toString(36).substring(2, 9);
+        const newPlaylist: Playlist = { id, name, trackIds: [] };
+        set((s: PlayerStore) => ({ playlists: [...s.playlists, newPlaylist] }));
+        return id;
+      },
       deletePlaylist: (playlistId: string) => {
         set((s: PlayerStore) => ({ playlists: s.playlists.filter((p: Playlist) => p.id !== playlistId) }));
       },

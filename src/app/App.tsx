@@ -120,6 +120,88 @@ export const App: React.FC = () => {
     };
   }, [duration, currentTime, playbackRate]);
 
+  // ---- IndexedDB Library Sync & 30 Stream Preload --------------------------
+  const hasHydrated = usePlayerStore((s) => s.hasHydrated);
+  useEffect(() => {
+    if (!hasHydrated) return;
+
+    const initLibrary = async () => {
+      try {
+        const { libraryDB } = await import("@/lib/audio/LibraryDB");
+        const { DEFAULT_STREAMS } = await import("@/lib/audio/DefaultStreams");
+
+        let dbTracks = await libraryDB.getAllTracks();
+
+        if (dbTracks.length === 0) {
+          // First run: Seed default streams
+          const now = Date.now();
+          const seedTracks = DEFAULT_STREAMS.map((s, idx) => ({
+            ...s,
+            addedAt: now + idx,
+            playCount: 0,
+          }));
+          for (const t of seedTracks) {
+            await libraryDB.saveTrack(t);
+          }
+          dbTracks = await libraryDB.getAllTracks();
+        }
+
+        // Recreate Object URLs for local files and cover arts
+        const loadedTracks = dbTracks.map((t) => {
+          let url = t.url;
+          let artworkUrl = undefined;
+          if (t.source === "local" && t.fileBlob) {
+            url = URL.createObjectURL(t.fileBlob);
+          }
+          if (t.artworkBlob) {
+            artworkUrl = URL.createObjectURL(t.artworkBlob);
+          }
+          return {
+            id: t.id,
+            title: t.title,
+            artist: t.artist,
+            album: t.album,
+            url,
+            artworkUrl,
+            duration: t.duration,
+            mime: t.mime,
+            isStream: t.isStream,
+            source: t.source,
+            _objectUrl: t.source === "local" ? url : undefined,
+            addedAt: t.addedAt,
+            playCount: t.playCount,
+          };
+        });
+
+        // Update player store queue and index
+        const state = usePlayerStore.getState();
+
+        // Match the current track from queue by ID if possible
+        let nextIndex = state.index;
+        if (state.queue.length > 0 && nextIndex >= 0 && nextIndex < state.queue.length) {
+          const currentId = state.queue[nextIndex]?.id;
+          const matchedIndex = loadedTracks.findIndex((t) => t.id === currentId);
+          if (matchedIndex >= 0) {
+            nextIndex = matchedIndex;
+          }
+        }
+
+        const currentTrack =
+          nextIndex >= 0 && nextIndex < loadedTracks.length ? loadedTracks[nextIndex] : null;
+
+        usePlayerStore.setState({
+          queue: loadedTracks,
+          index: nextIndex,
+          current: currentTrack,
+        });
+      } catch (err) {
+        console.error("[App] Failed to initialize local library:", err);
+      }
+    };
+
+    initLibrary();
+  }, [hasHydrated]);
+
   return (
     <ThemeProvider>
       <MotionProvider>

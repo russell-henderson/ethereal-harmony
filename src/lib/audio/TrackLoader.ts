@@ -139,6 +139,7 @@ export async function loadTrackFromFile(file: File): Promise<Track> {
   let artist = "Uploaded Track";
   let album = "Local Files";
   let artworkUrl: string | undefined = undefined;
+  let artworkBlob: Blob | undefined = undefined;
 
   try {
     const arrayBuffer = await file.arrayBuffer();
@@ -147,12 +148,14 @@ export async function loadTrackFromFile(file: File): Promise<Track> {
     if (tags.artist) artist = tags.artist;
     if (tags.album) album = tags.album;
     if (tags.artworkUrl) artworkUrl = tags.artworkUrl;
+    if (tags.artworkBlob) artworkBlob = tags.artworkBlob;
   } catch (err) {
     console.warn("[TrackLoader] Failed to parse ID3 tags:", err);
   }
 
+  const trackId = makeId();
   const track: Track = {
-    id: makeId(),
+    id: trackId,
     title,
     artist,
     album,
@@ -164,6 +167,28 @@ export async function loadTrackFromFile(file: File): Promise<Track> {
     source: "local",
     _objectUrl: objectUrl,
   };
+
+  // Save to IndexedDB
+  try {
+    const { libraryDB } = await import("./LibraryDB");
+    await libraryDB.saveTrack({
+      id: track.id,
+      title: track.title,
+      artist: track.artist,
+      album: track.album,
+      source: "local",
+      url: "", // Recreated dynamically on app load
+      duration: track.duration,
+      mime: track.mime,
+      isStream: false,
+      addedAt: Date.now(),
+      playCount: 0,
+      fileBlob: file,
+      artworkBlob,
+    });
+  } catch (dbErr) {
+    console.error("[TrackLoader] Failed to save local track to IndexedDB:", dbErr);
+  }
 
   return track;
 }
