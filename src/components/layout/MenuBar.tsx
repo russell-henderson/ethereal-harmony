@@ -119,7 +119,7 @@ export const MenuBar: React.FC = () => {
         <div key={menu.label} className={styles["eh-menu"]} role="presentation">
           <motion.button
             ref={el => { menuRefs.current[idx] = el || null; }}
-            className={styles.ehMenuTrigger}
+            className={styles["eh-menu__trigger"]}
             role="menuitem"
             aria-haspopup="true"
             aria-expanded={openMenu === idx}
@@ -137,7 +137,7 @@ export const MenuBar: React.FC = () => {
           <AnimatePresence>
             {openMenu === idx && (
               <motion.div
-                className={styles.ehMenuList}
+                className={styles["eh-menu__list"]}
                 role="menu"
                 id={`menubar-list-${idx}`}
                 aria-labelledby={`menubar-menu-${idx}`}
@@ -153,7 +153,7 @@ export const MenuBar: React.FC = () => {
                       if (!itemRefs.current[idx]) itemRefs.current[idx] = [];
                       itemRefs.current[idx][itemIdx] = el;
                     }}
-                    className={styles.ehMenuItem}
+                    className={styles["eh-menu__item"]}
                     role="menuitem"
                     tabIndex={0}
                     onClick={() => {
