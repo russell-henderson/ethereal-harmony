@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { usePlayerStore } from '../usePlayerStore';
 import type { Track } from '../types';
+import { playbackController } from '../../audio/PlaybackController';
 
 // Reset store state before each test
 beforeEach(() => {
@@ -20,6 +21,8 @@ beforeEach(() => {
     playlists: [],
     hasHydrated: false,
   });
+  // Reset controller state to avoid singleton contamination
+  playbackController.clearQueue();
 });
 
 describe('usePlayerStore', () => {

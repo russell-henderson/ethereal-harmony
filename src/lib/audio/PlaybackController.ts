@@ -149,7 +149,7 @@ export class PlaybackController {
    * Replace the whole queue and optionally select the starting item.
    * Frees blob/object URLs of the old queue to avoid leaks.
    */
-  setQueue(tracks: Track[], startIndex = 0) {
+  setQueue(tracks: Track[], startIndex = 0, autoplay = true) {
     // Cleanup previous queue resources
     this.queue.forEach((t) => revokeTrackResources(t));
 
@@ -160,7 +160,7 @@ export class PlaybackController {
     this.rebuildPlayOrder();
     this.events.emit("queuechange", { queueLength: this.queue.length });
 
-    return this.loadCurrent(true);
+    return this.loadCurrent(autoplay);
   }
 
   /** Append or insert a track. */

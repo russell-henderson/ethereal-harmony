@@ -173,7 +173,7 @@ export const App: React.FC = () => {
           };
         });
 
-        // Update player store queue and index
+        // Update playback controller queue and index (which syncs to store automatically)
         const state = usePlayerStore.getState();
 
         // Match the current track from queue by ID if possible
@@ -186,14 +186,8 @@ export const App: React.FC = () => {
           }
         }
 
-        const currentTrack =
-          nextIndex >= 0 && nextIndex < loadedTracks.length ? loadedTracks[nextIndex] : null;
-
-        usePlayerStore.setState({
-          queue: loadedTracks,
-          index: nextIndex,
-          current: currentTrack,
-        });
+        const { playbackController } = await import("@/lib/audio/PlaybackController");
+        await playbackController.setQueue(loadedTracks, nextIndex >= 0 ? nextIndex : 0, false);
       } catch (err) {
         console.error("[App] Failed to initialize local library:", err);
       }

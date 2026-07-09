@@ -34,18 +34,15 @@ export const selectNotPlayedYet = (s: PlayerStore) =>
  */
 
 import { create } from "zustand";
-// import { devtools } from "zustand/middleware";
+import { playbackController } from "@/lib/audio/PlaybackController";
 
 const storage = createJSONStorage(() => localStorage);
 
 /* ---------------------------------- Types --------------------------------- */
 
-
-
-// Helper for delegating to PlaybackController (stub for now)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function withController(_fn: (pc: unknown) => void) {
-  // TODO: wire to actual PlaybackController instance
+// Helper for delegating to PlaybackController
+function withController(fn: (pc: typeof playbackController) => void) {
+  fn(playbackController);
 }
 
 // -------------------- Zustand Player Store (CLEAN REWRITE, 2025-08-24) --------------------
@@ -94,7 +91,7 @@ export const usePlayerStore = create<PlayerStore>()(
           ),
         }));
       },
-  setQueue: (tracks: Track[], startIndex: number = 0) => {
+      setQueue: (tracks: Track[], startIndex: number = 0) => {
         const now = Date.now();
         const safeIndex = tracks.length === 0 ? -1 : Math.min(Math.max(startIndex, 0), tracks.length - 1);
         const normTracks = tracks.map((t: Track) => ({
@@ -104,35 +101,35 @@ export const usePlayerStore = create<PlayerStore>()(
         }));
         set({ queue: [...normTracks], index: safeIndex });
         withController((pc) => {
-          // @ts-expect-error: pc is unknown until PlaybackController is typed
-          if (pc.replaceQueue) {
-            // @ts-expect-error: pc is unknown until PlaybackController is typed
-            pc.replaceQueue(normTracks, safeIndex);
-            return;
-          }
-          if (safeIndex >= 0) {
-            const t = normTracks[safeIndex];
-            // @ts-expect-error: pc is unknown until PlaybackController is typed
-            pc.loadAndPlay?.(t);
-          }
+          pc.setQueue(normTracks, safeIndex);
         });
       },
       addToQueue: (track: Track) => {
         const now = Date.now();
+        const normTrack = {
+          ...track,
+          addedAt: track.addedAt ?? now,
+          playCount: track.playCount ?? 0,
+        };
         set((s) => ({
-          queue: [
-            ...s.queue,
-            {
-              ...track,
-              addedAt: track.addedAt ?? now,
-              playCount: track.playCount ?? 0,
-            },
-          ],
+          queue: [...s.queue, normTrack],
         }));
+        withController((pc) => {
+          pc.addToQueue(normTrack);
+        });
       },
       addManyToQueue: (tracks: Track[]) => {
         if (!tracks?.length) return;
-        set((s: PlayerStore) => ({ queue: [...s.queue, ...tracks] }));
+        const now = Date.now();
+        const normTracks = tracks.map((t: Track) => ({
+          ...t,
+          addedAt: t.addedAt ?? now,
+          playCount: t.playCount ?? 0,
+        }));
+        set((s: PlayerStore) => ({ queue: [...s.queue, ...normTracks] }));
+        withController((pc) => {
+          normTracks.forEach((t) => pc.addToQueue(t));
+        });
       },
       removeFromQueue: (index: number) => {
         set((s: PlayerStore) => {
@@ -145,18 +142,17 @@ export const usePlayerStore = create<PlayerStore>()(
             newIndex = s.index - 1;
           } else if (index === s.index) {
             newIndex = Math.min(s.index, newQueue.length - 1);
-            const track = newQueue[newIndex];
-            if (track) withController((pc) => {
-              // @ts-expect-error: pc is unknown until PlaybackController is typed
-              pc.loadAndPlay?.(track);
-            });
           }
           return { queue: newQueue, index: newIndex };
         });
+        withController((pc) => {
+          pc.removeFromQueue(index);
+        });
       },
       removeTrackFromQueue: (trackId: string) => {
+        let idx = -1;
         set((s: PlayerStore) => {
-          const idx = s.queue.findIndex((t: Track) => t.id === trackId);
+          idx = s.queue.findIndex((t: Track) => t.id === trackId);
           if (idx === -1) return s;
           const newQueue = [...s.queue.slice(0, idx), ...s.queue.slice(idx + 1)];
           let newIndex = s.index;
@@ -166,17 +162,20 @@ export const usePlayerStore = create<PlayerStore>()(
             newIndex = s.index - 1;
           } else if (idx === s.index) {
             newIndex = Math.min(s.index, newQueue.length - 1);
-            const track = newQueue[newIndex];
-            if (track) withController((pc) => {
-              // @ts-expect-error: pc is unknown until PlaybackController is typed
-              pc.loadAndPlay?.(track);
-            });
           }
           return { queue: newQueue, index: newIndex };
         });
+        if (idx >= 0) {
+          withController((pc) => {
+            pc.removeFromQueue(idx);
+          });
+        }
       },
       clearQueue: () => {
-        set({ queue: [], index: -1 });
+        set({ queue: [], index: -1, current: null });
+        withController((pc) => {
+          pc.clearQueue();
+        });
       },
       setCurrentIndex: (idx: number) => {
         const { queue } = get() as PlayerStore;
@@ -186,17 +185,13 @@ export const usePlayerStore = create<PlayerStore>()(
         }
         const clamped = Math.min(Math.max(idx, 0), queue.length - 1);
         set((s: PlayerStore) => {
-          const track = s.queue[clamped];
-          if (!track) return { index: clamped };
           const newQueue = s.queue.map((t: Track, i: number) =>
             i === clamped ? { ...t, playCount: (t.playCount ?? 0) + 1 } : t
           );
           return { index: clamped, queue: newQueue };
         });
-        const track = (get() as PlayerStore).queue[clamped];
-        if (track) withController((pc) => {
-          // @ts-expect-error: pc is unknown until PlaybackController is typed
-          pc.loadAndPlay?.(track);
+        withController((pc) => {
+          pc.jumpTo(clamped, true);
         });
       },
       next: () => {
@@ -207,17 +202,13 @@ export const usePlayerStore = create<PlayerStore>()(
         }
         const nextIndex = Math.min(s.index + 1, s.queue.length - 1);
         set((state: PlayerStore) => {
-          const track = state.queue[nextIndex];
-          if (!track) return { index: nextIndex };
           const newQueue = state.queue.map((t: Track, i: number) =>
             i === nextIndex ? { ...t, playCount: (t.playCount ?? 0) + 1 } : t
           );
           return { index: nextIndex, queue: newQueue };
         });
-        const track = get().queue[nextIndex];
-        if (track) withController((pc) => {
-          // @ts-expect-error: pc is unknown until PlaybackController is typed
-          pc.loadAndPlay?.(track);
+        withController((pc) => {
+          pc.nextTrack(true);
         });
       },
       prev: () => {
@@ -228,36 +219,28 @@ export const usePlayerStore = create<PlayerStore>()(
         }
         const prevIndex = Math.max(s.index - 1, 0);
         set((state: PlayerStore) => {
-          const track = state.queue[prevIndex];
-          if (!track) return { index: prevIndex };
           const newQueue = state.queue.map((t: Track, i: number) =>
             i === prevIndex ? { ...t, playCount: (t.playCount ?? 0) + 1 } : t
           );
           return { index: prevIndex, queue: newQueue };
         });
-        const track = get().queue[prevIndex];
-        if (track) withController((pc) => {
-          // @ts-expect-error: pc is unknown until PlaybackController is typed
-          pc.loadAndPlay?.(track);
+        withController((pc) => {
+          pc.prevTrack(true);
         });
       },
       play: () => withController((pc) => {
-        // @ts-expect-error: pc is unknown until PlaybackController is typed
-        pc.play?.();
+        pc.play();
       }),
       pause: () => withController((pc) => {
-        // @ts-expect-error: pc is unknown until PlaybackController is typed
-        pc.pause?.();
+        pc.pause();
       }),
       togglePlay: () => withController((pc) => {
-        // @ts-expect-error: pc is unknown until PlaybackController is typed
-        pc.toggle?.();
+        pc.toggle();
       }),
       seek: (seconds: number) => {
         if (typeof seconds !== "number" || !Number.isFinite(seconds)) return;
         withController((pc) => {
-          // @ts-expect-error: pc is unknown until PlaybackController is typed
-          pc.seek?.(seconds);
+          pc.seek(seconds);
         });
       },
       playIndex: (idx: number) => {
@@ -265,17 +248,13 @@ export const usePlayerStore = create<PlayerStore>()(
         if (queue.length === 0) return;
         const clamped = Math.min(Math.max(idx, 0), queue.length - 1);
         set((state: PlayerStore) => {
-          const track = state.queue[clamped];
-          if (!track) return { index: clamped };
           const newQueue = state.queue.map((t: Track, i: number) =>
             i === clamped ? { ...t, playCount: (t.playCount ?? 0) + 1 } : t
           );
           return { index: clamped, queue: newQueue };
         });
-        const track = get().queue[clamped];
-        if (track) withController((pc) => {
-          // @ts-expect-error: pc is unknown until PlaybackController is typed
-          pc.loadAndPlay?.(track);
+        withController((pc) => {
+          pc.jumpTo(clamped, true);
         });
       }
     }),
@@ -320,4 +299,46 @@ export const usePlayerStore = create<PlayerStore>()(
   )
 );
 // Removed duplicate store definition at the bottom of the file
+
+// Sync playbackController events back to the Zustand store
+if (typeof window !== "undefined") {
+  playbackController.on("trackchange", ({ track, index }) => {
+    usePlayerStore.setState({ 
+      current: track, 
+      index 
+    });
+  });
+
+  playbackController.on("play", () => {
+    usePlayerStore.setState({ isPlaying: true, playbackState: "playing" });
+  });
+
+  playbackController.on("pause", () => {
+    usePlayerStore.setState({ isPlaying: false, playbackState: "paused" });
+  });
+
+  playbackController.on("ended", () => {
+    usePlayerStore.setState({ isPlaying: false, playbackState: "paused" });
+  });
+
+  playbackController.on("timeupdate", ({ currentTime }) => {
+    usePlayerStore.setState({ position: currentTime });
+  });
+
+  playbackController.on("durationchange", ({ duration }) => {
+    usePlayerStore.setState({ duration });
+  });
+
+  playbackController.on("volumechange", ({ volume, muted }) => {
+    usePlayerStore.setState({ volume, muted });
+  });
+
+  playbackController.on("ratechange", ({ rate }) => {
+    usePlayerStore.setState({ playbackRate: rate });
+  });
+
+  playbackController.on("queuechange", ({ queueLength }) => {
+    usePlayerStore.setState({ queue: playbackController.getQueue() });
+  });
+}
 

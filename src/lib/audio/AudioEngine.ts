@@ -102,6 +102,8 @@ export class AudioEngine {
 
   // ---- DOM/Media/AudioContext ----------------------------------------------
   private readonly audio: HTMLAudioElement;
+  private readonly streamAudio: HTMLAudioElement;
+  private activeAudio: HTMLAudioElement;
   private ctx: AudioContext | null = null;
   private source: MediaElementAudioSourceNode | null = null;
 
@@ -130,35 +132,67 @@ export class AudioEngine {
 
   // ---- Construction ---------------------------------------------------------
   private constructor() {
-    // NOTE: we create the <audio> element immediately, but DO NOT create
-    // the AudioContext until it's needed to satisfy autoplay policies.
     this.audio = document.createElement("audio");
     this.audio.preload = "metadata";
     this.audio.crossOrigin = "anonymous";
     this.audio.playsInline = true; // iOS
 
-    // Proxy DOM media events to our emitter
-    this.audio.addEventListener("play", () => this.events.emit("play", undefined));
-    this.audio.addEventListener("pause", () => this.events.emit("pause", undefined));
-    this.audio.addEventListener("ended", () => this.events.emit("ended", undefined));
-    this.audio.addEventListener("error", () =>
-      this.events.emit("error", { error: this.audio.error ?? new Error("Media error") })
-    );
-    this.audio.addEventListener("timeupdate", () =>
-      this.events.emit("timeupdate", { currentTime: this.audio.currentTime || 0 })
-    );
-    this.audio.addEventListener("durationchange", () =>
-      this.events.emit("durationchange", { duration: this.duration })
-    );
-    this.audio.addEventListener("loadedmetadata", () =>
-      this.events.emit("loadedmetadata", { duration: this.duration })
-    );
-    this.audio.addEventListener("ratechange", () =>
-      this.events.emit("ratechange", { rate: this.audio.playbackRate || 1 })
-    );
-    this.audio.addEventListener("volumechange", () =>
-      this.events.emit("volumechange", { volume: this.audio.volume, muted: this.audio.muted })
-    );
+    this.streamAudio = document.createElement("audio");
+    this.streamAudio.preload = "metadata";
+    this.streamAudio.playsInline = true; // iOS
+
+    this.activeAudio = this.audio;
+
+    // Proxy DOM media events to our emitter for both elements
+    this.setupAudioListeners(this.audio, "local");
+    this.setupAudioListeners(this.streamAudio, "remote");
+  }
+
+  private setupAudioListeners(el: HTMLAudioElement, type: "local" | "remote") {
+    const isCurrent = () => {
+      if (type === "local") return this.activeAudio === this.audio;
+      return this.activeAudio === this.streamAudio;
+    };
+
+    el.addEventListener("play", () => {
+      if (isCurrent()) this.events.emit("play", undefined);
+    });
+    el.addEventListener("pause", () => {
+      if (isCurrent()) this.events.emit("pause", undefined);
+    });
+    el.addEventListener("ended", () => {
+      if (isCurrent()) this.events.emit("ended", undefined);
+    });
+    el.addEventListener("error", () => {
+      if (isCurrent()) {
+        this.events.emit("error", { error: el.error ?? new Error("Media error") });
+      }
+    });
+    el.addEventListener("timeupdate", () => {
+      if (isCurrent()) {
+        this.events.emit("timeupdate", { currentTime: el.currentTime || 0 });
+      }
+    });
+    el.addEventListener("durationchange", () => {
+      if (isCurrent()) {
+        this.events.emit("durationchange", { duration: this.duration });
+      }
+    });
+    el.addEventListener("loadedmetadata", () => {
+      if (isCurrent()) {
+        this.events.emit("loadedmetadata", { duration: this.duration });
+      }
+    });
+    el.addEventListener("ratechange", () => {
+      if (isCurrent()) {
+        this.events.emit("ratechange", { rate: el.playbackRate || 1 });
+      }
+    });
+    el.addEventListener("volumechange", () => {
+      if (isCurrent()) {
+        this.events.emit("volumechange", { volume: el.volume, muted: el.muted });
+      }
+    });
   }
 
   // ---- Public subscription API ---------------------------------------------
@@ -167,20 +201,20 @@ export class AudioEngine {
   }
 
   // ---- Element accessors ----------------------------------------------------
-  /** Returns the internal <audio> element (you may append it to the DOM). */
+  /** Returns the active internal <audio> element. */
   get media(): HTMLAudioElement {
-    return this.audio;
+    return this.activeAudio;
   }
 
   // ---- Core state accessors -------------------------------------------------
   get isPlaying() {
-    return !this.audio.paused && !this.audio.ended;
+    return !this.activeAudio.paused && !this.activeAudio.ended;
   }
   get currentTime() {
-    return this.audio.currentTime || 0;
+    return this.activeAudio.currentTime || 0;
   }
   get duration() {
-    return Number.isFinite(this.audio.duration) ? this.audio.duration : 0;
+    return Number.isFinite(this.activeAudio.duration) ? this.activeAudio.duration : 0;
   }
   get volume() {
     return this._volume;
@@ -382,29 +416,49 @@ export class AudioEngine {
       this.hls = null;
     }
 
-    // Ensure context & nodes are ready; create source node once
-    this.ensureContext();
-    this.createSource();
+    const isRemote = normalized.startsWith("http://") || normalized.startsWith("https://");
+
+    if (isRemote) {
+      // Pause local element
+      try {
+        this.audio.pause();
+      } catch {}
+      
+      this.activeAudio = this.streamAudio;
+    } else {
+      // Pause remote element
+      try {
+        this.streamAudio.pause();
+      } catch {}
+
+      this.activeAudio = this.audio;
+      
+      // Ensure context & nodes are ready; create source node once (only for local element)
+      this.ensureContext();
+      this.createSource();
+    }
+
+    // Sync state to current active element
+    this.activeAudio.volume = this._volume;
+    this.activeAudio.muted = this._muted;
+    this.activeAudio.playbackRate = this._rate;
 
     if (isHlsUrl(normalized)) {
-      // Try custom HLS controller (Chromium), fallback to native (Safari)
       try {
         const mod = (await import("@/lib/streaming/HlsController").catch(() => null)) as any;
         if (mod) {
           const hls: OptionalHlsController =
             typeof mod.default === "function" ? new mod.default() : (mod as OptionalHlsController);
-          await Promise.resolve(hls.attach(this.audio, normalized));
+          await Promise.resolve(hls.attach(this.activeAudio, normalized));
           this.hls = hls;
         } else {
-          // No controller available; attempt native (some browsers support HLS natively)
-          this.audio.src = normalized;
+          this.activeAudio.src = normalized;
         }
       } catch {
-        this.audio.src = normalized;
+        this.activeAudio.src = normalized;
       }
     } else {
-      // Direct URL or blob
-      this.audio.src = normalized;
+      this.activeAudio.src = normalized;
     }
 
     this.events.emit("loaded", { url: normalized });
@@ -436,20 +490,29 @@ export class AudioEngine {
   }
 
   async play(): Promise<void> {
-    // iOS/Safari unlock dance
-    if (!this.ctx) this.ensureContext();
-    if (this.ctx?.state === "suspended") {
-      try {
-        await this.ctx.resume();
-        this.events.emit("contextstate", { state: this.ctx.state });
-      } catch {}
+    if (this.activeAudio === this.audio) {
+      if (!this.ctx) this.ensureContext();
+      if (this.ctx?.state === "suspended") {
+        try {
+          await this.ctx.resume();
+          this.events.emit("contextstate", { state: this.ctx.state });
+        } catch {}
+      }
+      this.createSource();
     }
-    this.createSource();
-    await this.audio.play();
+    try {
+      await this.activeAudio.play();
+    } catch (err: any) {
+      if (err && err.name === "AbortError") {
+        // Play was interrupted by pause(); safe to swallow
+        return;
+      }
+      throw err;
+    }
   }
 
   async pause(): Promise<void> {
-    this.audio.pause();
+    this.activeAudio.pause();
   }
 
   async toggle(): Promise<void> {
@@ -459,29 +522,31 @@ export class AudioEngine {
   seek(positionSec: number) {
     const d = this.duration || 0;
     if (d <= 0) return;
-    this.audio.currentTime = Math.min(Math.max(0, positionSec), d);
+    this.activeAudio.currentTime = Math.min(Math.max(0, positionSec), d);
   }
 
   setVolume(v: number) {
     const vol = clamp01(v);
     this._volume = vol;
-    // Keep element volume in sync for HW keys & system UI
     this.audio.volume = vol;
+    this.streamAudio.volume = vol;
     if (this.gain) this.gain.gain.value = this._muted ? 0 : vol;
-    this.events.emit("volumechange", { volume: this.audio.volume, muted: this._muted });
+    this.events.emit("volumechange", { volume: this.activeAudio.volume, muted: this._muted });
   }
 
   setMuted(m: boolean) {
     this._muted = !!m;
     this.audio.muted = this._muted;
+    this.streamAudio.muted = this._muted;
     if (this.gain) this.gain.gain.value = this._muted ? 0 : this._volume;
-    this.events.emit("volumechange", { volume: this.audio.volume, muted: this._muted });
+    this.events.emit("volumechange", { volume: this.activeAudio.volume, muted: this._muted });
   }
 
   setRate(rate: number) {
     const r = Math.max(0.25, Math.min(4.0, rate || 1));
     this._rate = r;
     this.audio.playbackRate = r;
+    this.streamAudio.playbackRate = r;
     this.events.emit("ratechange", { rate: r });
   }
 
@@ -490,7 +555,7 @@ export class AudioEngine {
    * No-op if unsupported.
    */
   async setOutputDevice(deviceId: string): Promise<void> {
-    const el = this.audio as any;
+    const el = this.activeAudio as any;
     if (typeof el.setSinkId === "function") {
       try {
         await el.setSinkId(deviceId);
@@ -510,12 +575,32 @@ export class AudioEngine {
 
   /** Convenience: fill frequency-domain data (0-255). */
   getFrequencyData(out: Uint8Array) {
+    if (this.activeAudio === this.streamAudio && this.isPlaying) {
+      // Procedural data when playing remote streams (visualizer remains active!)
+      const time = Date.now() * 0.004;
+      for (let i = 0; i < out.length; i++) {
+        // Generate a nice rolling landscape of values
+        const val = Math.sin(i * 0.05 - time) * Math.cos(i * 0.01 + time * 0.5);
+        out[i] = Math.floor((val * 0.5 + 0.5) * 128 * this._volume * (1 - i / out.length));
+      }
+      return;
+    }
+
     if (!this.analyser) this.getAnalyser();
     this.analyser!.getByteFrequencyData(out);
   }
 
   /** Convenience: fill time-domain (waveform) data (0-255). */
   getTimeDomainData(out: Uint8Array) {
+    if (this.activeAudio === this.streamAudio && this.isPlaying) {
+      const time = Date.now() * 0.004;
+      for (let i = 0; i < out.length; i++) {
+        const val = Math.sin(i * 0.08 - time) * 30 * this._volume;
+        out[i] = 128 + Math.floor(val);
+      }
+      return;
+    }
+
     if (!this.analyser) this.getAnalyser();
     this.analyser!.getByteTimeDomainData(out);
   }
@@ -555,11 +640,16 @@ export class AudioEngine {
 
   // ---- Cleanup --------------------------------------------------------------
   async destroy() {
-    // Stop playback & release media src
+    // Stop playback & release media src for both elements
     try {
       this.audio.pause();
       this.audio.removeAttribute("src");
       this.audio.load();
+    } catch {}
+    try {
+      this.streamAudio.pause();
+      this.streamAudio.removeAttribute("src");
+      this.streamAudio.load();
     } catch {}
 
     // Tear down HLS if used
