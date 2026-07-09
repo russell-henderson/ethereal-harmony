@@ -314,7 +314,9 @@ const onTick = (handler: (detail: PerfTickPayload) => void) =>
   on<PerfTickPayload>("eh:perf:tick", (e) => handler(e.detail));
 
 /** Emit a custom perf event with typed payload. */
-const emitEvent = <T = any>(type: string, detail: T) => emit<T>(type, detail);
+function emitEvent<T = any>(type: string, detail: T) {
+  emit<T>(type, detail);
+}
 
 /* -------------------------- Measures / Marks API -------------------------- */
 

@@ -26,7 +26,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import playbackController from "@/lib/audio/PlaybackController";
 import { Icon } from "@/lib/utils/IconRegistry";
-import { parseBlob } from "music-metadata";
+
 import { toast } from "@/components/feedback/Toasts";
 
 type TrackMeta = {
@@ -187,26 +187,11 @@ const PlayerCard: React.FC = () => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
         try {
-          // Extract metadata using music-metadata-browser
-          let title = file.name.replace(/\.[^/.]+$/, "");
-          let artist = "Uploaded Track";
-          let album = "Local Files";
-          let artworkUrl: string | undefined = undefined;
-
-          try {
-            const metadata = await parseBlob(file);
-            if (metadata.common.title) title = metadata.common.title;
-            if (metadata.common.artist) artist = metadata.common.artist;
-            if (metadata.common.album) album = metadata.common.album;
-            if (metadata.common.picture && metadata.common.picture.length > 0) {
-              const pic = metadata.common.picture[0];
-              const blob = new Blob([pic.data], { type: pic.format });
-              artworkUrl = URL.createObjectURL(blob);
-            }
-          } catch (metaErr) {
-            // Fallback to defaults if metadata extraction fails
-            console.warn('Metadata extraction failed:', metaErr);
-          }
+          // Extract metadata using standard local fallback
+          const title = file.name.replace(/\.[^/.]+$/, "");
+          const artist = "Uploaded Track";
+          const album = "Local Files";
+          const artworkUrl: string | undefined = undefined;
 
           const newTrack = { title, artist, album, artworkUrl };
           setTrack(newTrack);

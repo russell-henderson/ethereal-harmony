@@ -1,6 +1,5 @@
 // src/lib/audio/TrackLoader.ts
 
-import { parseBlob } from "music-metadata";
 
 export type Track = {
   /** Stable identifier for UI lists and store */
@@ -135,26 +134,11 @@ export async function loadTrackFromFile(file: File): Promise<Track> {
   // Try best-effort duration for local files too (usually quick)
   const duration = await probeDuration(objectUrl, 4000);
 
-  // Extract metadata using music-metadata-browser
-  let title = sanitizeTitle(file.name);
-  let artist: string | undefined = undefined;
-  let album: string | undefined = undefined;
-  let artworkUrl: string | undefined = undefined;
-  try {
-    const metadata = await parseBlob(file);
-    if (metadata.common) {
-      title = metadata.common.title || title;
-      artist = metadata.common.artist;
-      album = metadata.common.album;
-      if (metadata.common.picture && metadata.common.picture.length > 0) {
-        const pic = metadata.common.picture[0];
-        const blob = new Blob([pic.data], { type: pic.format });
-        artworkUrl = URL.createObjectURL(blob);
-      }
-    }
-  } catch (err) {
-    // ignore metadata errors, fallback to filename
-  }
+  // Sanitized fallback metadata from local file details
+  const title = sanitizeTitle(file.name);
+  const artist = "Uploaded Track";
+  const album = "Local Files";
+  const artworkUrl = undefined;
 
   const track: Track = {
     id: makeId(),
