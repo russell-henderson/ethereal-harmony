@@ -1,3 +1,6 @@
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/173515f5-a395-4387-8523-a2d60a8b5006" />
+
+
 # Ethereal Harmony Documentation Index
 
 This folder contains all core documentation for the Ethereal Harmony project.  
